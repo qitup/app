@@ -1,15 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    compileSdkVersion 25
+    buildToolsVersion '25.0.0'
     defaultConfig {
         applicationId "dubs.queueitup"
         minSdkVersion 15
-        targetSdkVersion 26
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -19,12 +18,28 @@ android {
     }
 }
 
+repositories {
+    mavenCentral()
+    maven {
+        url "https://maven.google.com"
+    }
+    flatDir {
+        dirs 'libs'
+    }
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    compile 'com.android.support:appcompat-v7:26.+'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
+    // This library handles authentication and authorization
+    compile 'com.spotify.sdk:spotify-android-auth-1.0.0@aar'
+
+    // This library handles music playback
+    compile 'com.spotify.sdk:spotify-player-24-noconnect-2.20b@aar'
+
+    // All other dependencies for your app should also be here:
+    compile 'com.android.support:appcompat-v7:25.4.0'
     testCompile 'junit:junit:4.12'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
 }
