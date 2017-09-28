@@ -1,10 +1,15 @@
 package dubs.queueitup;
 
+import android.app.ActionBar;
+import android.app.FragmentTransaction;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -19,6 +24,13 @@ import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
 
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Album;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+
 import static com.spotify.sdk.android.player.PlayerEvent.*;
 
 public class MainActivity extends AppCompatActivity implements
@@ -27,8 +39,11 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final String CLIENT_ID = "SPOTIFY_ID";
     private static final String REDIRECT_URI = "queueitup-login://callback";
+    private String auth_token = "";
 
     private Player mPlayer;
+    private SpotifyApi api;
+    private SpotifyService spotify;
 
     // Request code that will be used to verify if the result comes from correct activity
     // Can be any integer
@@ -46,6 +61,11 @@ public class MainActivity extends AppCompatActivity implements
         AuthenticationRequest request = builder.build();
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.simpleTabLayout);
+        int position = tabLayout.getSelectedTabPosition();
+        Log.d("MainActivity", "Selected tab: " + position);
+
     }
 
     @Override
@@ -56,7 +76,17 @@ public class MainActivity extends AppCompatActivity implements
         if (requestCode == REQUEST_CODE) {
             AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
             if (response.getType() == AuthenticationResponse.Type.TOKEN) {
-                Config playerConfig = new Config(this, response.getAccessToken(), CLIENT_ID);
+                auth_token = response.getAccessToken();
+                Config playerConfig = new Config(this, auth_token, CLIENT_ID);
+
+                api = new SpotifyApi();
+
+                // Most (but not all) of the Spotify Web API endpoints require authorization.
+                // If you know you'll only use the ones that don't require authorisation you can skip this step
+                api.setAccessToken(response.getAccessToken());
+
+                spotify = api.getService();
+
                 Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
                     @Override
                     public void onInitialized(SpotifyPlayer spotifyPlayer) {
@@ -88,8 +118,21 @@ public class MainActivity extends AppCompatActivity implements
         switch (playerEvent) {
             case kSpPlaybackNotifyMetadataChanged:
                 Log.d("MainActivity", mPlayer.getMetadata().currentTrack.toString());
-                final TextView trackText = ((TextView) findViewById(R.id.trackDisplay));
-                trackText.setText(mPlayer.getMetadata().currentTrack.toString());
+                Log.d("MainActivity", auth_token);
+
+                spotify.getAlbum("7xl50xr9NDkd3i2kBbzsNZ", new Callback<Album>() {
+                    @Override
+                    public void success(Album album, Response response) {
+                        Log.d("Album success", album.name);
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                        Log.d("Album failure", error.toString());
+                    }
+                });
+
+
                 break;
             // Handle event type as necessary
             default:
