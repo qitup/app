@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">QueueItUp</string>
+    <string name="create_party">Create Party</string>
+    <string name="join_party">Join Party</string>
 </resources>

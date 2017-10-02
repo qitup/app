@@ -68,26 +68,27 @@ public class MainActivity extends AppCompatActivity implements
         simpleViewPager = (ViewPager) findViewById(R.id.simpleViewPager);
         tabLayout = (TabLayout) findViewById(R.id.simpleTabLayout);
 
+        tabLayout.setupWithViewPager(simpleViewPager);
+
         TabLayout.Tab firstTab = tabLayout.newTab();
-        firstTab.setText("Party"); // set the Text for the first Tab
-        firstTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the tab
-
         tabLayout.addTab(firstTab); // add  the tab at in the TabLayout
-
         TabLayout.Tab secondTab = tabLayout.newTab();
-        secondTab.setText("Queue"); // set the Text for the second Tab
-        secondTab.setIcon(R.drawable.ic_reorder_white_48dp); // set an icon for the second tab
         tabLayout.addTab(secondTab); // add  the tab  in the TabLayout
-
         TabLayout.Tab thirdTab = tabLayout.newTab();
-        thirdTab.setText("Search"); // set the Text for the first Tab
-        thirdTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the first tab
         tabLayout.addTab(thirdTab); // add  the tab at in the TabLayout
 
         PagerAdapter adapter = new PagerAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
         simpleViewPager.setAdapter(adapter);
+
+        firstTab.setText("Search"); // set the Text for the first Tab
+        firstTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the tab
+        secondTab.setText("Queue"); // set the Text for the second Tab
+        secondTab.setIcon(R.drawable.ic_reorder_white_48dp); // set an icon for the second tab
+        thirdTab.setText("Party"); // set the Text for the first Tab
+        thirdTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the first tab
+
         // addOnPageChangeListener event change the tab on slide
-        simpleViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+//        simpleViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
 
         // Instantiate the RequestQueue.
