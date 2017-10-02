@@ -5,14 +5,16 @@ package dubs.queueitup;
  */
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 public class SearchPage extends Fragment {
 
     public SearchPage() {
-// Required empty public constructor
+        // Required empty public constructor
     }
 
     @Override
@@ -23,8 +25,12 @@ public class SearchPage extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-// Inflate the layout for this fragment
+        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.search_page, container, false);
+    }
+
+    public void spotifySearch(String search_string, int search_type){
+
     }
 
 }

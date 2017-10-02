@@ -11,13 +11,20 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
-import com.spotify.sdk.android.authentication.AuthenticationClient;
-import com.spotify.sdk.android.authentication.AuthenticationRequest;
-import com.spotify.sdk.android.authentication.AuthenticationResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.spotify.sdk.android.authentication.*;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Error;
@@ -28,11 +35,6 @@ import com.spotify.sdk.android.player.SpotifyPlayer;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
-import kaaes.spotify.webapi.android.models.Album;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
-import dubs.queueitup.PagerAdapter;
 
 import static com.spotify.sdk.android.player.PlayerEvent.*;
 
@@ -40,15 +42,17 @@ public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback
 {
 
+
+
     private static final String CLIENT_ID = "SPOTIFY_ID";
     private static final String REDIRECT_URI = "queueitup-login://callback";
-    private String auth_token = "";
 
     private Player mPlayer;
     private SpotifyApi api;
     private SpotifyService spotify;
     ViewPager simpleViewPager;
     TabLayout tabLayout;
+
 
     // Request code that will be used to verify if the result comes from correct activity
     // Can be any integer
@@ -57,35 +61,26 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.d("MainActivity", "HostName:"+(BuildConfig.host_name));
+
         setContentView(R.layout.activity_main);
-
-        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
-                AuthenticationResponse.Type.TOKEN,
-                REDIRECT_URI);
-        builder.setScopes(new String[]{"user-read-private", "streaming"});
-        AuthenticationRequest request = builder.build();
-
-        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
 
         // get the reference of ViewPager and TabLayout
         simpleViewPager = (ViewPager) findViewById(R.id.simpleViewPager);
         tabLayout = (TabLayout) findViewById(R.id.simpleTabLayout);
 
-        // Create a new Tab named "First"
         TabLayout.Tab firstTab = tabLayout.newTab();
         firstTab.setText("Party"); // set the Text for the first Tab
-        firstTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the
+        firstTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the tab
 
-        // first tab
         tabLayout.addTab(firstTab); // add  the tab at in the TabLayout
 
-        // Create a new Tab named "Second"
         TabLayout.Tab secondTab = tabLayout.newTab();
         secondTab.setText("Queue"); // set the Text for the second Tab
         secondTab.setIcon(R.drawable.ic_reorder_white_48dp); // set an icon for the second tab
         tabLayout.addTab(secondTab); // add  the tab  in the TabLayout
 
-        // Create a new Tab named "Third"
         TabLayout.Tab thirdTab = tabLayout.newTab();
         thirdTab.setText("Search"); // set the Text for the first Tab
         thirdTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the first tab
@@ -95,42 +90,36 @@ public class MainActivity extends AppCompatActivity implements
         simpleViewPager.setAdapter(adapter);
         // addOnPageChangeListener event change the tab on slide
         simpleViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+
+
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = BuildConfig.scheme+BuildConfig.host_name;
+
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("MainActivity", "Response is: "+ response.substring(0,500));
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("Error", "That didn't work!");
+            }
+        });
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
 
-        // Check if result comes from the correct activity
-        if (requestCode == REQUEST_CODE) {
-            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
-            if (response.getType() == AuthenticationResponse.Type.TOKEN) {
-                auth_token = response.getAccessToken();
-                Config playerConfig = new Config(this, auth_token, CLIENT_ID);
-
-                api = new SpotifyApi();
-
-                // Most (but not all) of the Spotify Web API endpoints require authorization.
-                // If you know you'll only use the ones that don't require authorisation you can skip this step
-                api.setAccessToken(response.getAccessToken());
-
-                spotify = api.getService();
-
-                Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
-                    @Override
-                    public void onInitialized(SpotifyPlayer spotifyPlayer) {
-                        mPlayer = spotifyPlayer;
-                        mPlayer.addConnectionStateCallback(MainActivity.this);
-                        mPlayer.addNotificationCallback(MainActivity.this);
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        Log.e("MainActivity", "Could not initialize player: " + throwable.getMessage());
-                    }
-                });
-            }
-        }
     }
 
     @Override
@@ -143,30 +132,30 @@ public class MainActivity extends AppCompatActivity implements
     public void onPlaybackEvent(PlayerEvent playerEvent) {
         Log.d("MainActivity", "Playback event received: " + playerEvent.name());
 
-
-        switch (playerEvent) {
-            case kSpPlaybackNotifyMetadataChanged:
-                Log.d("MainActivity", mPlayer.getMetadata().currentTrack.toString());
-                Log.d("MainActivity", auth_token);
-
-                spotify.getAlbum("7xl50xr9NDkd3i2kBbzsNZ", new Callback<Album>() {
-                    @Override
-                    public void success(Album album, Response response) {
-                        Log.d("Album success", album.name);
-                    }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-                        Log.d("Album failure", error.toString());
-                    }
-                });
-
-
-                break;
-            // Handle event type as necessary
-            default:
-                break;
-        }
+//
+//        switch (playerEvent) {
+//            case kSpPlaybackNotifyMetadataChanged:
+//                Log.d("MainActivity", mPlayer.getMetadata().currentTrack.toString());
+//                Log.d("MainActivity", auth_token);
+//
+//                spotify.getAlbum("7xl50xr9NDkd3i2kBbzsNZ", new Callback<Album>() {
+//                    @Override
+//                    public void success(Album album, Response response) {
+//                        Log.d("Album success", album.name);
+//                    }
+//
+//                    @Override
+//                    public void failure(RetrofitError error) {
+//                        Log.d("Album failure", error.toString());
+//                    }
+//                });
+//
+//
+//                break;
+//            // Handle event type as necessary
+//            default:
+//                break;
+//        }
     }
 
     @Override
@@ -183,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onLoggedIn() {
         Log.d("MainActivity", "User logged in");
 
-        mPlayer.playUri(null, "spotify:track:5SiEPQmziTAi5DHNhB3Wz5", 0, 0);
+//        mPlayer.playUri(null, "spotify:track:5SiEPQmziTAi5DHNhB3Wz5", 0, 0);
     }
 
     @Override

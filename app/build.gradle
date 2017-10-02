@@ -5,25 +5,35 @@ android {
     buildToolsVersion '25.0.0'
     defaultConfig {
         applicationId "dubs.queueitup"
-        minSdkVersion 15
+        minSdkVersion 21
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
+
+
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "string", "host_name", "10.0.2.2:8080"
+            buildConfigField "String", "clientID", '"SPOTIFY_ID"'
+            buildConfigField "string", "scheme", "http"
+        }
+        debug {
+            applicationIdSuffix ".debug"
+            buildConfigField "String", "host_name", '"10.0.2.2:8080"'
+            buildConfigField "String", "clientID", '"SPOTIFY_ID"'
+            buildConfigField "String", "scheme", '"http"'
         }
     }
 }
 
 repositories {
     mavenCentral()
-    maven {
-        url "https://maven.google.com"
-    }
+    maven { url "https://maven.google.com" }
     maven { url "https://jitpack.io" }
+
     flatDir {
         dirs 'libs'
     }
@@ -32,8 +42,12 @@ repositories {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
+
     // This library handles authentication and authorization
     compile 'com.spotify.sdk:spotify-android-auth-1.0.0@aar'
+
+    //Http Library
+    compile 'com.android.volley:volley:1.0.0'
 
     // This library handles music playback
     compile 'com.spotify.sdk:spotify-player-24-noconnect-2.20b@aar'
