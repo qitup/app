@@ -2,6 +2,7 @@ package dubs.queueitup;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.os.Build;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
@@ -41,7 +42,7 @@ import static com.spotify.sdk.android.player.PlayerEvent.*;
 public class MainActivity extends AppCompatActivity implements
         SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
-
+    private static final String HOST_EMULATOR = "10.0.2.2:8081";
     private static final String CLIENT_ID = "SPOTIFY_ID";
     private static final String REDIRECT_URI = "queueitup-login://callback";
 
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d("MainActivity", "HostName:" + (BuildConfig.host_name));
+        Log.d("MainActivity", "HostName:" + getHost());
 
         setContentView(R.layout.activity_main);
 
@@ -92,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = BuildConfig.scheme + "://" + BuildConfig.host_name + "/ping";
+        String url = BuildConfig.scheme + "://" + getHost() + "/auth/spotify";
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
@@ -100,12 +101,12 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void onResponse(String response) {
                         // Display the first 500 characters of the response string.
-                        Log.d("MainActivity", "Response is: " + response.substring(0, 500));
+                        Log.d("MainActivity", "Response is: " + response);
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e("Error", "That didn't work!");
+                Log.e("Error", "That didn't work!" + error.toString());
             }
         });
 
@@ -193,5 +194,7 @@ public class MainActivity extends AppCompatActivity implements
         Log.d("MainActivity", "Received connection message: " + message);
     }
 
-
+    public static String getHost() {
+        return (Build.PRODUCT).contains("sdk") ? HOST_EMULATOR : BuildConfig.HOST;
+    }
 }
