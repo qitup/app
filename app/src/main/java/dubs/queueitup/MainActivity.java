@@ -39,9 +39,7 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import static com.spotify.sdk.android.player.PlayerEvent.*;
 
 public class MainActivity extends AppCompatActivity implements
-        SpotifyPlayer.NotificationCallback, ConnectionStateCallback
-{
-
+        SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
 
     private static final String CLIENT_ID = "SPOTIFY_ID";
@@ -62,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d("MainActivity", "HostName:"+(BuildConfig.host_name));
+        Log.d("MainActivity", "HostName:" + (BuildConfig.host_name));
 
         setContentView(R.layout.activity_main);
 
@@ -94,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = BuildConfig.scheme+BuildConfig.host_name;
+        String url = BuildConfig.scheme + "://" + BuildConfig.host_name + "/ping";
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
@@ -102,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void onResponse(String response) {
                         // Display the first 500 characters of the response string.
-                        Log.d("MainActivity", "Response is: "+ response.substring(0,500));
+                        Log.d("MainActivity", "Response is: " + response.substring(0, 500));
                     }
                 }, new Response.ErrorListener() {
             @Override
