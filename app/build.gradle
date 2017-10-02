@@ -16,13 +16,13 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            buildConfigField "string", "host_name", "10.0.2.2:8080"
+            buildConfigField "string", "HOST", "10.0.2.2:8080"
             buildConfigField "String", "clientID", '"SPOTIFY_ID"'
             buildConfigField "string", "scheme", "http"
         }
         debug {
             applicationIdSuffix ".debug"
-            buildConfigField "String", "host_name", '"10.0.2.2:8081"'
+            buildConfigField "String", "HOST", '"' + getIP() + ':8081"'
             buildConfigField "String", "clientID", '"SPOTIFY_ID"'
             buildConfigField "String", "scheme", '"http"'
         }
@@ -60,4 +60,23 @@ dependencies {
     androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:design:25.3.1'
+}
+
+static def getIP() {
+    InetAddress result = null;
+    Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+    while (interfaces.hasMoreElements()) {
+        Enumeration<InetAddress> addresses = interfaces.nextElement().getInetAddresses();
+        while (addresses.hasMoreElements()) {
+            InetAddress address = addresses.nextElement();
+            if (!address.isLoopbackAddress()) {
+                if (address.isSiteLocalAddress()) {
+                    return address.getHostAddress();
+                } else if (result == null) {
+                    result = address;
+                }
+            }
+        }
+    }
+    return (result != null ? result : InetAddress.getLocalHost()).getHostAddress();
 }
