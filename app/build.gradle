@@ -22,7 +22,7 @@ android {
         }
         debug {
             applicationIdSuffix ".debug"
-            buildConfigField "String", "host_name", '"10.0.2.2:8080"'
+            buildConfigField "String", "host_name", '"10.0.2.2:8081"'
             buildConfigField "String", "clientID", '"SPOTIFY_ID"'
             buildConfigField "String", "scheme", '"http"'
         }
