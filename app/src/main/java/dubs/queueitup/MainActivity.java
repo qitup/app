@@ -16,6 +16,8 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -23,6 +25,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.spotify.sdk.android.authentication.*;
@@ -33,6 +36,8 @@ import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
+
+import org.json.JSONObject;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
@@ -51,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements
     private SpotifyService spotify;
     ViewPager simpleViewPager;
     TabLayout tabLayout;
-
+    private WebView mWebview;
 
     // Request code that will be used to verify if the result comes from correct activity
     // Can be any integer
@@ -88,8 +93,11 @@ public class MainActivity extends AppCompatActivity implements
         thirdTab.setText("Party"); // set the Text for the first Tab
         thirdTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the first tab
 
-        // addOnPageChangeListener event change the tab on slide
-//        simpleViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        mWebview  = new WebView(this);
+
+        mWebview.getSettings().setJavaScriptEnabled(true); // enable javascript
+
+
 
 
         // Instantiate the RequestQueue.
@@ -97,12 +105,17 @@ public class MainActivity extends AppCompatActivity implements
         String url = BuildConfig.scheme + "://" + getHost() + "/auth/spotify";
 
         // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
+        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(String response) {
+                    public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
-                        Log.d("MainActivity", "Response is: " + response);
+                        Log.d("MainActivity", "Response is: " + response.toString());
+                        mWebview.setWebViewClient(new WebViewClient());
+
+                        mWebview .loadUrl(response.toString());
+                        setContentView(mWebview);
+
                     }
                 }, new Response.ErrorListener() {
             @Override
