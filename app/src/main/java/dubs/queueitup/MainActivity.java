@@ -2,6 +2,7 @@ package dubs.queueitup;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentActivity;
@@ -18,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -36,6 +38,8 @@ import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
+import android.view.View;
+import android.view.View.OnClickListener;
 
 import org.json.JSONObject;
 
@@ -56,7 +60,10 @@ public class MainActivity extends AppCompatActivity implements
     private SpotifyService spotify;
     ViewPager simpleViewPager;
     TabLayout tabLayout;
+    Button button;
     private WebView mWebview;
+    private String baseURL = BuildConfig.scheme + "://" + getHost();
+
 
     // Request code that will be used to verify if the result comes from correct activity
     // Can be any integer
@@ -66,66 +73,71 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d("MainActivity", "HostName:" + getHost());
-
         setContentView(R.layout.activity_main);
 
         // get the reference of ViewPager and TabLayout
         simpleViewPager = (ViewPager) findViewById(R.id.simpleViewPager);
-        tabLayout = (TabLayout) findViewById(R.id.simpleTabLayout);
+        PagerAdapter adapter = new PagerAdapter(getSupportFragmentManager());
 
-        tabLayout.setupWithViewPager(simpleViewPager);
+        // Add Fragments to adapter one by one
+        adapter.addFragment(new PartyPage(), "Party");
+        adapter.addFragment(new QueuePage(), "Queue");
+        adapter.addFragment(new SearchPage(), "Search");
 
-        TabLayout.Tab firstTab = tabLayout.newTab();
-        tabLayout.addTab(firstTab); // add  the tab at in the TabLayout
-        TabLayout.Tab secondTab = tabLayout.newTab();
-        tabLayout.addTab(secondTab); // add  the tab  in the TabLayout
-        TabLayout.Tab thirdTab = tabLayout.newTab();
-        tabLayout.addTab(thirdTab); // add  the tab at in the TabLayout
-
-        PagerAdapter adapter = new PagerAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
         simpleViewPager.setAdapter(adapter);
 
-        firstTab.setText("Search"); // set the Text for the first Tab
-        firstTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the tab
-        secondTab.setText("Queue"); // set the Text for the second Tab
-        secondTab.setIcon(R.drawable.ic_reorder_white_48dp); // set an icon for the second tab
-        thirdTab.setText("Party"); // set the Text for the first Tab
-        thirdTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the first tab
+        tabLayout = (TabLayout) findViewById(R.id.simpleTabLayout);
+        tabLayout.setupWithViewPager(simpleViewPager);
 
-        mWebview  = new WebView(this);
+//        TabLayout.Tab firstTab = tabLayout.newTab();
+//        tabLayout.addTab(firstTab); // add  the tab at in the TabLayout
+//        TabLayout.Tab secondTab = tabLayout.newTab();
+//        tabLayout.addTab(secondTab); // add  the tab  in the TabLayout
+//        TabLayout.Tab thirdTab = tabLayout.newTab();
+//        tabLayout.addTab(thirdTab); // add  the tab at in the TabLayout
 
-        mWebview.getSettings().setJavaScriptEnabled(true); // enable javascript
+//        firstTab.setText("Search"); // set the Text for the first Tab
+//        firstTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the tab
+//        secondTab.setText("Queue"); // set the Text for the second Tab
+//        secondTab.setIcon(R.drawable.ic_reorder_white_48dp); // set an icon for the second tab
+//        thirdTab.setText("Party"); // set the Text for the first Tab
+//        thirdTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the first tab
 
-
-
-
-        // Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url = BuildConfig.scheme + "://" + getHost() + "/auth/spotify";
-
-        // Request a string response from the provided URL.
-        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        // Display the first 500 characters of the response string.
-                        Log.d("MainActivity", "Response is: " + response.toString());
-                        mWebview.setWebViewClient(new WebViewClient());
-
-                        mWebview .loadUrl(response.toString());
-                        setContentView(mWebview);
-
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("Error", "That didn't work!" + error.toString());
-            }
-        });
-
-        // Add the request to the RequestQueue.
-        queue.add(stringRequest);
+//        mWebview  = new WebView(this);
+//        RequestQueue queue = Volley.newRequestQueue(this);
+//
+//        String url = baseURL + "/auth/spotify";
+//
+//        // Request a string response from the provided URL.
+//        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        // Display the first 500 characters of the response string.
+//                        Log.d("MainActivity", "Response is: " + response.toString());
+//                        mWebview.setWebViewClient(new WebViewClient());
+//
+//                        mWebview .loadUrl(response.toString());
+//                        setContentView(mWebview);
+//
+//                    }
+//                }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                Log.e("Error", "That didn't work!" + error.toString());
+//            }
+//        });
+//
+//        // Add the request to the RequestQueue.
+//        queue.add(stringRequest);
+//        int party = R.layout.party_page;
+//                Button button2 = (Button) party_page find(R.id.joinPartyButton);
+//        button2.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Log.d("MainActivity", "You attempted to join a party");
+//            }
+//        });
 
     }
 
