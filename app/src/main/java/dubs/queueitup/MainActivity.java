@@ -103,11 +103,14 @@ public class MainActivity extends AppCompatActivity implements
 //        thirdTab.setText("Party"); // set the Text for the first Tab
 //        thirdTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the first tab
 
-//        mWebview  = new WebView(this);
-//        RequestQueue queue = Volley.newRequestQueue(this);
-//
-//        String url = baseURL + "/auth/spotify";
-//
+        mWebview  = new WebView(this);
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        String url = baseURL + "/auth/spotify";
+        mWebview.setWebViewClient(new WebViewClient());
+        mWebview.loadUrl(url);
+        setContentView(mWebview);
+
 //        // Request a string response from the provided URL.
 //        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, url, null,
 //                new Response.Listener<JSONObject>() {
