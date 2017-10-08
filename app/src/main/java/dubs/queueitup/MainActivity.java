@@ -89,6 +89,12 @@ public class MainActivity extends AppCompatActivity implements
         tabLayout = (TabLayout) findViewById(R.id.simpleTabLayout);
         tabLayout.setupWithViewPager(simpleViewPager);
 
+//        TabLayout.Tab firstTab = tabLayout.newTab();
+//        tabLayout.addTab(firstTab); // add  the tab at in the TabLayout
+//        TabLayout.Tab secondTab = tabLayout.newTab();
+//        tabLayout.addTab(secondTab); // add  the tab  in the TabLayout
+//        TabLayout.Tab thirdTab = tabLayout.newTab();
+//        tabLayout.addTab(thirdTab); // add  the tab at in the TabLayout
 
 //        firstTab.setText("Search"); // set the Text for the first Tab
 //        firstTab.setIcon(R.drawable.ic_search_white_48dp); // set an icon for the tab
@@ -101,6 +107,29 @@ public class MainActivity extends AppCompatActivity implements
         RequestQueue queue = Volley.newRequestQueue(this);
 
         String url = baseURL + "/auth/spotify";
+        mWebview.setWebViewClient(new WebViewClient());
+        mWebview.loadUrl(url);
+        setContentView(mWebview);
+
+//        // Request a string response from the provided URL.
+//        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        // Display the first 500 characters of the response string.
+//                        Log.d("MainActivity", "Response is: " + response.toString());
+//                        mWebview.setWebViewClient(new WebViewClient());
+//
+//                        mWebview .loadUrl(response.toString());
+//                        setContentView(mWebview);
+//
+//                    }
+//                }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                Log.e("Error", "That didn't work!" + error.toString());
+//            }
+//        });
 //
 //        // Add the request to the RequestQueue.
 //        queue.add(stringRequest);
