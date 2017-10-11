@@ -50,6 +50,7 @@ import java.net.CookieHandler;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
 import static com.spotify.sdk.android.player.PlayerEvent.*;
@@ -140,10 +141,9 @@ public class MainActivity extends AppCompatActivity implements
 
                 if (request_url.startsWith(baseURL + "/auth/spotify/callback")) {
                     String cookie = CookieManager.getInstance().getCookie(request.getUrl().getHost());
-
                     if (cookie != null) {
-                        String[] parts = cookie.split("=");
-                        systemCookies.getCookieStore().add(URI.create(baseURL), new HttpCookie(parts[0], parts[1]));
+                        List<HttpCookie> cookies = HttpCookie.parse(cookie);
+                        systemCookies.getCookieStore().add(URI.create(baseURL), cookies.get(0));
                     }
                     MainActivity.this.finishAuthentication(request_url);
 
