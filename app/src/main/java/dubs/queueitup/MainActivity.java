@@ -115,6 +115,10 @@ public class MainActivity extends AppCompatActivity implements
         CookieManager cookieManager = CookieManager.getInstance();
 
         mWebview = new WebView(this);
+        final WebSettings settings = mWebview.getSettings();
+        settings.setAppCacheEnabled(true);
+        settings.setBuiltInZoomControls(true);
+        settings.setJavaScriptEnabled(true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             cookieManager.setAcceptThirdPartyCookies(mWebview, true);
@@ -123,9 +127,9 @@ public class MainActivity extends AppCompatActivity implements
             cookieManager.setAcceptThirdPartyCookies(mWebview, true);
         }
 
-        final WebSettings settings = mWebview.getSettings();
-        settings.setAppCacheEnabled(true);
-        settings.setBuiltInZoomControls(true);
+//        final WebSettings settings = mWebview.getSettings();
+//        settings.setAppCacheEnabled(true);
+//        settings.setBuiltInZoomControls(true);
 
         systemCookies = new java.net.CookieManager(null, CookiePolicy.ACCEPT_ALL);
         CookieHandler.setDefault(systemCookies);
