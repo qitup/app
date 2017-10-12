@@ -144,10 +144,15 @@ public class MainActivity extends AppCompatActivity implements
                 String request_url = request.getUrl().toString();
 
                 if (request_url.startsWith(baseURL + "/auth/spotify/callback")) {
-                    String cookie = CookieManager.getInstance().getCookie(request.getUrl().getHost());
-                    if (cookie != null) {
-                        List<HttpCookie> cookies = HttpCookie.parse(cookie);
-                        systemCookies.getCookieStore().add(URI.create(baseURL), cookies.get(0));
+                    String cookieHeader = CookieManager.getInstance().getCookie(request.getUrl().getHost());
+
+                    // If there are cookies then add them to the cookie store for future requests
+                    if (cookieHeader != null) {
+                        List<HttpCookie> cookies = HttpCookie.parse(cookieHeader);
+                        URI baseURI = URI.create(baseURL);
+                        for (HttpCookie cookie : cookies) {
+                            systemCookies.getCookieStore().add(baseURI, cookie);
+                        }
                     }
                     MainActivity.this.finishAuthentication(request_url);
 
