@@ -32,7 +32,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="dubs.queueitup.MainActivity" />
         </activity>
-        <activity android:name=".RequestSingleton"></activity>
+        <activity android:name=".RequestSingleton" />
+        <activity android:name=".LoginActivity"></activity>
     </application>
 
 </manifest>
