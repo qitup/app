@@ -93,6 +93,7 @@ public class LoginActivity extends AppCompatActivity {
                     mWebview.pauseTimers();
 
                     mWebview.destroy();
+                    LoginActivity.this.finish();
                     return true;
                 } else {
                     return false;
@@ -121,9 +122,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         mWebview.loadUrl(url);
-        setContentView(mWebview);
-
-
     }
 
     private void finishAuthentication(String exchange_url) {

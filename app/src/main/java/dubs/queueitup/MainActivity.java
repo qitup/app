@@ -79,6 +79,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         setupBottomNavBehaviors();
         setupBottomNavStyle();
 
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+
 
 //        CookieManager cookieManager = CookieManager.getInstance();
 //
