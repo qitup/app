@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_party"
+        android:icon="@drawable/ic_home_white_24dp"
+        android:title="@string/title_party" />
+
+    <item
+        android:id="@+id/navigation_queue"
+        android:icon="@drawable/ic_reorder_white_48dp"
+        android:title="@string/title_queue" />
+
+    <item
+        android:id="@+id/navigation_search"
+        android:icon="@drawable/ic_search_white_48dp"
+        android:title="@string/title_search" />
+
+</menu>

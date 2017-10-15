@@ -3,36 +3,38 @@ package dubs.queueitup;
 /**
  * Created by ryanschott on 2017-09-28.
  */
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-
-import org.json.JSONObject;
-
-import static android.R.attr.button;
-
-public class PartyPage extends Fragment {
-
+public class PartyPage extends Fragment implements View.OnClickListener{
+    Button createPartyButton;
+    public static final String ARG_TITLE = "arg_title";
 
     public PartyPage() {
-// Required empty public constructor
+    // Required empty public constructor
     }
+
+    OnCreatePartyButtonListener mListener;
+
+    public interface OnCreatePartyButtonListener {
+        void onCreateParty(String password);
+    }
+
+    public void onClick(View view){
+        if (mListener != null) {
+            mListener.onCreateParty(String.valueOf("testpw"));
+        }
+    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -40,8 +42,33 @@ public class PartyPage extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.party_page, container, false);
+        createPartyButton = (Button) view.findViewById(R.id.createPartyButton);
+
+        createPartyButton.setOnClickListener(this);
 
         return view;
+    }
+
+//    @Override
+//    public void onViewCreated(View view, Bundle savedInstanceState){
+//        createPartyButton.setOnClickListener(OnCreatePartyButtonListener(){
+//            @Override
+//            public void onClick(View view) {
+//                Log.d("PartyPage", "Create party clicked");
+//                MainActivity.myBundle.putString("party_pw", "testpw");
+//            }
+//        });
+//    }
+
+    @Override
+    public void onAttach(Context context){
+        super.onAttach(context);
+        if (context instanceof OnCreatePartyButtonListener) {
+            mListener = (OnCreatePartyButtonListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnCategoryFragmentListener");
+        }
     }
 
     public static PartyPage newInstance(String text) {
