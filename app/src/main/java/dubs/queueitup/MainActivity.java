@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE) {
             if(resultCode == RESULT_OK) {
-                RequestSingleton.getInstance(this).setAuth_token(data.getStringExtra("auth_token"));
+                RequestSingleton.setAuth_token(data.getStringExtra("auth_token"));
                 bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
                 setupBottomNavBehaviors();
                 setupBottomNavStyle();

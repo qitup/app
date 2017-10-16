@@ -59,11 +59,11 @@ public class RequestSingleton {
         getRequestQueue().add(req);
     }
 
-    public void setAuth_token(String authToken){
+    public static synchronized void setAuth_token(String authToken) {
         auth_token = authToken;
     }
 
-    public String getAuth_token(){
+    public static synchronized String getAuth_token() {
         return auth_token;
     }
 
