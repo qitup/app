@@ -17,6 +17,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.CookieHandler;
@@ -134,7 +135,12 @@ public class LoginActivity extends AppCompatActivity {
 
                         mWebview.destroy();
                         Intent intent = new Intent();
-                        intent.putExtra("auth_token", response.getString("token"));
+                        try {
+                            intent.putExtra("auth_token", response.getString("token"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
                         setResult(RESULT_OK, intent);
                         LoginActivity.this.finish();
                     }
