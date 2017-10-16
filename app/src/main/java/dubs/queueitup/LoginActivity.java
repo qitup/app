@@ -1,5 +1,6 @@
 package dubs.queueitup;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
@@ -132,6 +133,9 @@ public class LoginActivity extends AppCompatActivity {
                         mWebview.pauseTimers();
 
                         mWebview.destroy();
+                        Intent intent = new Intent();
+                        intent.putExtra("auth_token", response.getString("token"));
+                        setResult(RESULT_OK, intent);
                         LoginActivity.this.finish();
                     }
                 },
