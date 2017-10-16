@@ -74,123 +74,19 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
         setupViewPager();
 
-
-        bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
-        setupBottomNavBehaviors();
-        setupBottomNavStyle();
-
         Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, 1);
+    }
 
-
-//        CookieManager cookieManager = CookieManager.getInstance();
-//
-//        mWebview = new WebView(this);
-//        final WebSettings settings = mWebview.getSettings();
-//        settings.setAppCacheEnabled(true);
-//        settings.setBuiltInZoomControls(true);
-//        settings.setJavaScriptEnabled(true);
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            cookieManager.setAcceptThirdPartyCookies(mWebview, true);
-//        } else {
-//            cookieManager.setAcceptCookie(true);
-//            cookieManager.setAcceptThirdPartyCookies(mWebview, true);
-//        }
-//
-////        final WebSettings settings = mWebview.getSettings();
-////        settings.setAppCacheEnabled(true);
-////        settings.setBuiltInZoomControls(true);
-//
-//        systemCookies = new java.net.CookieManager(null, CookiePolicy.ACCEPT_ALL);
-//        CookieHandler.setDefault(systemCookies);
-//
-//        requestQueue = Volley.newRequestQueue(this);
-//
-//        String url = baseURL + "/auth/spotify";
-//
-//        mWebview.setWebViewClient(new WebViewClient() {
-//            @Override
-//            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-//                String request_url = request.getUrl().toString();
-//
-//                if (request_url.startsWith(baseURL + "/auth/spotify/callback")) {
-//                    String cookieHeader = CookieManager.getInstance().getCookie(request.getUrl().getHost());
-//
-//                    // If there are cookies then add them to the cookie store for future requests
-//                    if (cookieHeader != null) {
-//                        List<HttpCookie> cookies = HttpCookie.parse(cookieHeader);
-//                        URI baseURI = URI.create(baseURL);
-//                        for (HttpCookie cookie : cookies) {
-//                            systemCookies.getCookieStore().add(baseURI, cookie);
-//                        }
-//                    }
-//                    MainActivity.this.finishAuthentication(request_url);
-//
-//                    mWebview.clearCache(true);
-//
-//                    mWebview.onPause();
-//                    mWebview.removeAllViews();
-//                    mWebview.destroyDrawingCache();
-//
-//                    // NOTE: This pauses JavaScript execution for ALL WebViews,
-//                    // do not use if you have other WebViews still alive.
-//                    // If you create another WebView after calling this,
-//                    // make sure to call mWebView.resumeTimers().
-//                    mWebview.pauseTimers();
-//
-//                    mWebview.destroy();
-//                    mWebview = null;
-//                    return true;
-//                } else {
-//                    return false;
-//                }
-//            }
-//
-//            @Override
-//            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-//                super.onPageStarted(view, url, favicon);
-////                loadingFinished = false;
-//                //SHOW LOADING IF IT ISNT ALREADY VISIBLE
-//            }
-//
-//            @Override
-//            public void onPageFinished(WebView view, String url) {
-////                if(!redirect){
-////                    loadingFinished = true;
-////                }
-////
-////                if(loadingFinished && !redirect){
-////                    //HIDE LOADING IT HAS FINISHED
-////                } else{
-////                    redirect = false;
-////                }
-//                super.onPageFinished(view, url);
-//            }
-//        });
-//        mWebview.loadUrl(url);
-//        setContentView(mWebview);
-//
-//
-//    }
-//
-//    private void finishAuthentication(String exchange_url) {
-//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, exchange_url, null,
-//                new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        // Display the first 500 characters of the response string.
-//                        Log.d("MainActivity", "Response is: " + response.toString());
-//                    }
-//                },
-//                new Response.ErrorListener() {
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//                        Log.e("Error", "That didn't work!" + error.toString());
-//                    }
-//                });
-//
-//        requestQueue.add(request);
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if(resultCode == RESULT_OK) {
+                bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
+                setupBottomNavBehaviors();
+                setupBottomNavStyle();
+            }
+        }
     }
 
     public static String getHost() {
