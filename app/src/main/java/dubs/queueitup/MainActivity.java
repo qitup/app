@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private SpotifyService spotify;
     NoSwiperPager simpleViewPager;
     private WebView mWebview;
+    private String auth_token;
     private String baseURL = BuildConfig.scheme + "://" + getHost();
     private RequestQueue requestQueue;
     java.net.CookieManager systemCookies;
@@ -82,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1) {
             if(resultCode == RESULT_OK) {
+                RequestSingleton.getInstance(this).setAuth_token(data.getStringExtra("auth_token"));
                 bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
                 setupBottomNavBehaviors();
                 setupBottomNavStyle();
