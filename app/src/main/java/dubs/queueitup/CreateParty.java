@@ -8,14 +8,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
+import com.android.volley.*;
 import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class CreateParty extends AppCompatActivity {
 
@@ -32,7 +32,7 @@ public class CreateParty extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
-    public void submitParty(View view){
+    public void submitParty(View view) {
         EditText party_name_entry = (EditText) findViewById(R.id.partyName);
         EditText party_code_entry = (EditText) findViewById(R.id.party_code);
 
@@ -43,10 +43,10 @@ public class CreateParty extends AppCompatActivity {
         try {
             party_info.put("name", party_name_entry.getText().toString());
             party_info.put("join_code", party_code_entry.getText().toString());
-        } catch (JSONException e){
+        } catch (JSONException e) {
             e.printStackTrace();
         }
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/party", party_info,
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/party/", party_info,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -59,13 +59,21 @@ public class CreateParty extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error) {
                         Log.e("Error", "That didn't work!" + error.toString());
                     }
-                });
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getAuth_token());
+
+                return params;
+            }
+        };
 
 
         RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
 
-        public static String getHost() {
+    public static String getHost() {
         return (Build.PRODUCT).contains("sdk") ? HOST_EMULATOR : BuildConfig.HOST;
     }
 
