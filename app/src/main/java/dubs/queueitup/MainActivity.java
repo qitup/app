@@ -190,9 +190,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Inactive color when its view is disabled.
         Will not be visible if setColored(true) and default current item is set.
          */
-        bottomNavigation.setDefaultBackgroundColor(Color.WHITE);
-        bottomNavigation.setAccentColor(fetchColor(R.color.tabTextColor));
-        bottomNavigation.setInactiveColor(fetchColor(R.color.tabTextColor));
+        bottomNavigation.setDefaultBackgroundColor(fetchColor(R.color.colorBottomNavigationSelectedBackground));
+        bottomNavigation.setAccentColor(fetchColor(R.color.colorPrimaryDark));
+        bottomNavigation.setInactiveColor(fetchColor(R.color.colorBottomNavigationInactiveColored));
 
         // Colors for selected (active) and non-selected items.
         bottomNavigation.setColoredModeColors(Color.WHITE,
@@ -212,8 +212,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
      */
     private void addBottomNavigationItems() {
         AHBottomNavigationItem item1 = new AHBottomNavigationItem(R.string.title_party, R.drawable.ic_home_white_24dp, colors[0]);
-        AHBottomNavigationItem item2 = new AHBottomNavigationItem(R.string.title_queue, R.drawable.ic_reorder_white_48dp, colors[1]);
-        AHBottomNavigationItem item3 = new AHBottomNavigationItem(R.string.title_search, R.drawable.ic_search_white_48dp, colors[2]);
+        AHBottomNavigationItem item2 = new AHBottomNavigationItem(R.string.title_queue, R.drawable.ic_reorder_white_48dp, colors[0]);
+        AHBottomNavigationItem item3 = new AHBottomNavigationItem(R.string.title_search, R.drawable.ic_search_white_48dp, colors[0]);
 
         bottomNavigation.addItem(item1);
         bottomNavigation.addItem(item2);
