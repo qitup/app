@@ -46,6 +46,7 @@ public class LoginActivity extends AppCompatActivity {
         settings.setAppCacheEnabled(true);
         settings.setBuiltInZoomControls(true);
         settings.setJavaScriptEnabled(true);
+        settings.setAllowContentAccess(true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             cookieManager.setAcceptThirdPartyCookies(mWebview, true);

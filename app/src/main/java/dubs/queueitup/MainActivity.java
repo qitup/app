@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private static final String HOST_EMULATOR = "10.0.2.2:8081";
     private static final String CLIENT_ID = "SPOTIFY_ID";
     private static final String REDIRECT_URI = "queueitup-login://callback";
+    private static final int REQUEST_CODE = 1337;
+
 
     private Player mPlayer;
     private SpotifyApi api;
@@ -72,21 +74,24 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         setupViewPager();
 
         Intent intent = new Intent(this, LoginActivity.class);
-        startActivityForResult(intent, 1);
+        startActivityForResult(intent, REQUEST_CODE);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1) {
+        if (requestCode == REQUEST_CODE) {
             if(resultCode == RESULT_OK) {
                 RequestSingleton.getInstance(this).setAuth_token(data.getStringExtra("auth_token"));
                 bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
                 setupBottomNavBehaviors();
                 setupBottomNavStyle();
+            }
+        } else if(requestCode == 1338){
+            if(resultCode == RESULT_OK) {
+                Log.d("Mainactivity", "WOOHOO");
             }
         }
     }
@@ -136,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     public void onCreateParty(String password){
         Log.d("MainActivity", "Create party button clicked" + password);
             Intent intent = new Intent(this, CreateParty.class);
-            startActivity(intent);
+            startActivityForResult(intent, 1338);
     }
 
 
