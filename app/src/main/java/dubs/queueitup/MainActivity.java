@@ -1,6 +1,8 @@
 package dubs.queueitup;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
@@ -13,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -62,8 +65,10 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     NoSwiperPager simpleViewPager;
     private WebView mWebview;
     private String auth_token;
+    private Intent intent;
     private String baseURL = BuildConfig.scheme + "://" + getHost();
     private RequestQueue requestQueue;
+    private SharedPreferences sharedPref;
     java.net.CookieManager systemCookies;
     private boolean notificationVisible = false;
 
@@ -84,9 +89,17 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
         addBottomNavigationItems();
 
+        sharedPref = getPreferences(Context.MODE_PRIVATE);
+        auth_token = sharedPref.getString("auth_token", null);
 
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivityForResult(intent, REQUEST_CODE);
+        if(auth_token == null){
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivityForResult(intent, REQUEST_CODE);
+        } else {
+            Log.d("Main", auth_token);
+        }
+
+
 
         bottomNavigation.setOnTabSelectedListener(new AHBottomNavigation.OnTabSelectedListener() {
             @Override
@@ -111,7 +124,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         if (requestCode == REQUEST_CODE) {
             if(resultCode == RESULT_OK) {
                 RequestSingleton.setAuth_token(data.getStringExtra("auth_token"));
-
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("auth_token", data.getStringExtra("auth_token"));
+                editor.apply();
             }
         } else if(requestCode == 1338){
             if(resultCode == RESULT_OK) {
@@ -150,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 fragment = new SearchPage();
                 break;
         }
-        fragment.setArguments(passFragmentArguments(R.color.selectedTextColor));
+        fragment.setArguments(passFragmentArguments(R.color.textColorDefault));
         return fragment;
     }
 
@@ -161,11 +176,22 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         return bundle;
     }
 
-        @Override
-    public void onCreateParty(String password){
-        Log.d("MainActivity", "Create party button clicked" + password);
-            Intent intent = new Intent(this, CreateParty.class);
-            startActivityForResult(intent, 1338);
+    @Override
+    public void onCreateParty(View v){
+        switch (v.getId()){
+            case R.id.createPartyButton:
+                Log.d("MainActivity", "Create party button clicked");
+                intent = new Intent(this, CreateParty.class);
+                startActivityForResult(intent, 1338);
+                break;
+            case R.id.joinPartyButton:
+                Log.d("MainActivity", "Join party button clicked");
+                intent = new Intent(this, JoinParty.class);
+                startActivityForResult(intent, 1338);
+                break;
+
+        }
+
     }
 
 
@@ -190,13 +216,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Inactive color when its view is disabled.
         Will not be visible if setColored(true) and default current item is set.
          */
-        bottomNavigation.setDefaultBackgroundColor(fetchColor(R.color.colorBottomNavigationSelectedBackground));
+        bottomNavigation.setDefaultBackgroundColor(fetchColor(R.color.colorTopBottomBar));
         bottomNavigation.setAccentColor(fetchColor(R.color.colorPrimaryDark));
         bottomNavigation.setInactiveColor(fetchColor(R.color.colorBottomNavigationInactiveColored));
-
-        // Colors for selected (active) and non-selected items.
-        bottomNavigation.setColoredModeColors(Color.WHITE,
-                fetchColor(R.color.selectedTextColor));
 
         //  Enables Reveal effect
         bottomNavigation.setColored(false);
@@ -211,9 +233,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
      * Also assigns a distinct color to each Bottom Navigation item, used for the color ripple.
      */
     private void addBottomNavigationItems() {
-        AHBottomNavigationItem item1 = new AHBottomNavigationItem(R.string.title_party, R.drawable.ic_home_white_24dp, colors[0]);
-        AHBottomNavigationItem item2 = new AHBottomNavigationItem(R.string.title_queue, R.drawable.ic_reorder_white_48dp, colors[0]);
-        AHBottomNavigationItem item3 = new AHBottomNavigationItem(R.string.title_search, R.drawable.ic_search_white_48dp, colors[0]);
+        AHBottomNavigationItem item1 = new AHBottomNavigationItem(R.string.title_party, R.drawable.ic_home_white_24dp, R.color.colorTopBottomBar);
+        AHBottomNavigationItem item2 = new AHBottomNavigationItem(R.string.title_queue, R.drawable.ic_reorder_white_48dp, R.color.colorTopBottomBar);
+        AHBottomNavigationItem item3 = new AHBottomNavigationItem(R.string.title_search, R.drawable.ic_search_white_48dp, R.color.colorTopBottomBar);
 
         bottomNavigation.addItem(item1);
         bottomNavigation.addItem(item2);

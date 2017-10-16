@@ -13,7 +13,8 @@ import android.widget.Button;
 
 public class PartyPage extends Fragment implements View.OnClickListener{
     Button createPartyButton;
-    public static final String ARG_TITLE = "arg_title";
+    Button joinPartyButton;
+
 
     public PartyPage() {
     // Required empty public constructor
@@ -22,12 +23,13 @@ public class PartyPage extends Fragment implements View.OnClickListener{
     OnCreatePartyButtonListener mListener;
 
     public interface OnCreatePartyButtonListener {
-        void onCreateParty(String password);
+        void onCreateParty(View v);
     }
+
 
     public void onClick(View view){
         if (mListener != null) {
-            mListener.onCreateParty(String.valueOf("testpw"));
+            mListener.onCreateParty(view);
         }
     }
 
@@ -43,8 +45,10 @@ public class PartyPage extends Fragment implements View.OnClickListener{
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.party_page, container, false);
         createPartyButton = (Button) view.findViewById(R.id.createPartyButton);
+        joinPartyButton = (Button) view.findViewById(R.id.joinPartyButton);
 
         createPartyButton.setOnClickListener(this);
+        joinPartyButton.setOnClickListener(this);
 
         return view;
     }

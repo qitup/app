@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dubs.queueitup">
+
     <meta />
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -34,9 +35,8 @@
                 android:value="dubs.queueitup.MainActivity" />
         </activity>
         <activity android:name=".RequestSingleton" />
-        <activity android:name=".LoginActivity"></activity>
-
+        <activity android:name=".LoginActivity" />
+        <activity android:name=".JoinParty"></activity>
     </application>
-
 
 </manifest>

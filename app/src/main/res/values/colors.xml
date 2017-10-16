@@ -7,4 +7,7 @@
     <color name="tabSelectedHighlightColor">#10438f</color>
     <color name="selectedTextColor">#ebebeb</color>
     <color name="tabTextColor">#bfbfbf</color>
+    <color name="colorTopBottomBar">#14181c</color>
+    <color name="colorBackground">#161925</color>
+    <color name="textColorDefault">#e5e5e5</color>
 </resources>
