@@ -52,7 +52,7 @@ public class CreateParty extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
                         Log.d("MainActivity", "Response is: " + response.toString());
-                        CreateParty.this.finishActivity(1337);
+                        CreateParty.this.finishActivity(1338);
                     }
                 },
                 new Response.ErrorListener() {
