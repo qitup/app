@@ -11,11 +11,12 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
-public class RequestSingleton extends AppCompatActivity {
+public class RequestSingleton {
     private static RequestSingleton mInstance;
     private RequestQueue mRequestQueue;
     private ImageLoader mImageLoader;
     private static Context mCtx;
+    private static String auth_token;
 
     private RequestSingleton(Context context) {
         mCtx = context;
@@ -56,6 +57,14 @@ public class RequestSingleton extends AppCompatActivity {
 
     public <T> void addToRequestQueue(Request<T> req) {
         getRequestQueue().add(req);
+    }
+
+    public void setAuth_token(String authToken){
+        auth_token = authToken;
+    }
+
+    public String getAuth_token(){
+        return auth_token;
     }
 
     public ImageLoader getImageLoader() {
