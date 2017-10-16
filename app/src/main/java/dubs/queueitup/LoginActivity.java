@@ -79,21 +79,6 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     }
                     LoginActivity.this.finishAuthentication(request_url);
-
-                    mWebview.clearCache(true);
-
-                    mWebview.onPause();
-                    mWebview.removeAllViews();
-                    mWebview.destroyDrawingCache();
-
-                    // NOTE: This pauses JavaScript execution for ALL WebViews,
-                    // do not use if you have other WebViews still alive.
-                    // If you create another WebView after calling this,
-                    // make sure to call mWebView.resumeTimers().
-                    mWebview.pauseTimers();
-
-                    mWebview.destroy();
-                    LoginActivity.this.finish();
                     return true;
                 } else {
                     return false;
@@ -131,6 +116,23 @@ public class LoginActivity extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
                         Log.d("MainActivity", "Response is: " + response.toString());
+
+                        final WebView mWebview = (WebView) findViewById(R.id.webView);
+
+                        mWebview.clearCache(true);
+
+                        mWebview.onPause();
+                        mWebview.removeAllViews();
+                        mWebview.destroyDrawingCache();
+
+                        // NOTE: This pauses JavaScript execution for ALL WebViews,
+                        // do not use if you have other WebViews still alive.
+                        // If you create another WebView after calling this,
+                        // make sure to call mWebView.resumeTimers().
+                        mWebview.pauseTimers();
+
+                        mWebview.destroy();
+                        LoginActivity.this.finish();
                     }
                 },
                 new Response.ErrorListener() {
