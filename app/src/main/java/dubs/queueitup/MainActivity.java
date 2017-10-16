@@ -27,6 +27,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
+import com.aurelhubert.ahbottomnavigation.notification.AHNotification;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.Spotify;
 
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private String baseURL = BuildConfig.scheme + "://" + getHost();
     private RequestQueue requestQueue;
     java.net.CookieManager systemCookies;
+    private boolean notificationVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,8 +78,32 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
         setupViewPager();
 
+        bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
+        setupBottomNavBehaviors();
+        setupBottomNavStyle();
+
+        addBottomNavigationItems();
+
+
         Intent intent = new Intent(this, LoginActivity.class);
         startActivityForResult(intent, REQUEST_CODE);
+
+        bottomNavigation.setOnTabSelectedListener(new AHBottomNavigation.OnTabSelectedListener() {
+            @Override
+            public boolean onTabSelected(int position, boolean wasSelected) {
+//                fragment.updateColor(ContextCompat.getColor(MainActivity.this, colors[position]));
+
+                if (!wasSelected)
+                    viewPager.setCurrentItem(position);
+
+                // remove notification badge
+                int lastItemPos = bottomNavigation.getItemsCount() - 1;
+                if (notificationVisible && position == lastItemPos)
+                    bottomNavigation.setNotification(new AHNotification(), lastItemPos);
+
+                return true;
+            }
+        });
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -85,9 +111,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         if (requestCode == REQUEST_CODE) {
             if(resultCode == RESULT_OK) {
                 RequestSingleton.setAuth_token(data.getStringExtra("auth_token"));
-                bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
-                setupBottomNavBehaviors();
-                setupBottomNavStyle();
+
             }
         } else if(requestCode == 1338){
             if(resultCode == RESULT_OK) {
@@ -175,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 fetchColor(R.color.selectedTextColor));
 
         //  Enables Reveal effect
-        bottomNavigation.setColored(true);
+        bottomNavigation.setColored(false);
 
         //  Displays item Title always (for selected and non-selected items)
         bottomNavigation.setTitleState(AHBottomNavigation.TitleState.ALWAYS_SHOW);
