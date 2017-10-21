@@ -1,8 +1,10 @@
 package dubs.queueitup;
 
+import android.content.Intent;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -29,6 +31,11 @@ public class JoinParty extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_join_party);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar2);
+        setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     public void submitJoinParty(View view) {
@@ -42,7 +49,10 @@ public class JoinParty extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
                         Log.d("JoinParty", "Response is: " + response.toString());
-                        setResult(1338);
+                        Intent intent = new Intent();
+                        intent.putExtra("result_code", 1339);
+
+                        setResult(RESULT_OK, intent);
 
                         JoinParty.this.finish();
                     }
@@ -56,7 +66,7 @@ public class JoinParty extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("Authorization", "Bearer " + RequestSingleton.getAuth_token());
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
 
                 return params;
             }

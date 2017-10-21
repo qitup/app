@@ -1,10 +1,7 @@
 package dubs.queueitup;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.ColorRes;
@@ -16,39 +13,30 @@ import android.support.v7.app.AppCompatDelegate;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.webkit.CookieManager;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
 import com.aurelhubert.ahbottomnavigation.notification.AHNotification;
 import com.spotify.sdk.android.player.Player;
-import com.spotify.sdk.android.player.Spotify;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
-import java.net.CookieHandler;
-import java.net.CookiePolicy;
-import java.net.HttpCookie;
-import java.net.URI;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Album;
+import kaaes.spotify.webapi.android.models.TracksPager;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
-public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener {
-
-    private final int[] colors = {R.color.colorPrimary, R.color.colorPrimaryDark, R.color.colorAccent};
+public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener, SearchPage.searchTextEntered {
 
     private NoSwiperPager viewPager;
     private AHBottomNavigation bottomNavigation;
@@ -89,15 +77,18 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
         addBottomNavigationItems();
 
-        sharedPref = getPreferences(Context.MODE_PRIVATE);
-        auth_token = sharedPref.getString("auth_token", null);
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivityForResult(intent, REQUEST_CODE);
 
-        if(auth_token == null){
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivityForResult(intent, REQUEST_CODE);
-        } else {
-            Log.d("Main", auth_token);
-        }
+//        sharedPref = getPreferences(Context.MODE_PRIVATE);
+//        auth_token = sharedPref.getString("auth_token", null);
+//
+//        if(auth_token == null){
+//            Intent intent = new Intent(this, LoginActivity.class);
+//            startActivityForResult(intent, REQUEST_CODE);
+//        } else {
+//            Log.d("Main", auth_token);
+//        }
 
 
 
@@ -120,17 +111,32 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        android.app.FragmentManager fm = getFragmentManager();
+        Fragment frag;
+        android.app.FragmentTransaction ft = fm.beginTransaction();
+
+
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE) {
+        if (data.getIntExtra("result_code", -1) == 1337) {
             if(resultCode == RESULT_OK) {
-                RequestSingleton.setAuth_token(data.getStringExtra("auth_token"));
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString("auth_token", data.getStringExtra("auth_token"));
-                editor.apply();
+                RequestSingleton.setJWT_token(data.getStringExtra("auth_token"));
+                RequestSingleton.setSpotify_auth_token(getAuthToken());
+//                SharedPreferences.Editor editor = sharedPref.edit();
+//                editor.putString("auth_token", data.getStringExtra("auth_token"));
+//                editor.apply();
             }
-        } else if(requestCode == 1338){
+        } else if(data.getIntExtra("result_code", -1) == 1338){
             if(resultCode == RESULT_OK) {
                 Log.d("Mainactivity", "WOOHOO");
+                frag = pagerAdapter.getRegisteredFragment(0);
+                pagerAdapter.destroyItem(null, 0, frag);
+
+            }
+        } else if(data.getIntExtra("result_code", -1) == 1339){
+            if(resultCode == RESULT_OK) {
+                Log.d("Mainactivity", "WOOHOO2");
+                frag = pagerAdapter.getRegisteredFragment(0);
+                Log.d("MainAct", frag.toString());
             }
         }
     }
@@ -176,6 +182,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         return bundle;
     }
 
+    // Fragment interface overrides
+
     @Override
     public void onCreateParty(View v){
         switch (v.getId()){
@@ -187,11 +195,35 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             case R.id.joinPartyButton:
                 Log.d("MainActivity", "Join party button clicked");
                 intent = new Intent(this, JoinParty.class);
-                startActivityForResult(intent, 1338);
+                startActivityForResult(intent, 1339);
                 break;
-
         }
 
+    }
+
+    @Override
+    public void searchSpotify(String search_string){
+        SpotifyApi api = new SpotifyApi();
+
+        Map<String, Object> options = new HashMap<>();
+        options.put(SpotifyService.OFFSET, 0);
+        options.put(SpotifyService.LIMIT, 20);
+
+        api.setAccessToken(getAuthToken());
+
+        SpotifyService spotify = api.getService();
+
+//        spotify.searchTracks(search_string, options, new SpotifyCallback<TracksPager>() {
+//            @Override
+//            public void success(TracksPager tracksPager, Response response) {
+//                listener.onComplete(tracksPager.tracks.items);
+//            }
+//
+//            @Override
+//            public void failure(SpotifyError error) {
+//                listener.onError(error);
+//            }
+//        });
     }
 
 
@@ -253,18 +285,49 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         return ContextCompat.getColor(this, color);
     }
 
+
+    public String getAuthToken(){
+        String jwt_token = null;
+
+
+        try {
+            jwt_token = JWTUtils.decoded(RequestSingleton.getJWT_token());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        JSONObject auth = new JSONObject();
+
+        try {
+            auth = new JSONObject(jwt_token);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        try {
+            auth_token = auth.getString("access_token");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return "";
+        }
+        return auth_token;
+    }
 }
 
 class JWTUtils {
 
-    public static void decoded(String JWTEncoded) throws Exception {
+    public static String decoded(String JWTEncoded) throws Exception {
         try {
             String[] split = JWTEncoded.split("\\.");
             Log.d("JWT_DECODED", "Header: " + getJson(split[0]));
             Log.d("JWT_DECODED", "Body: " + getJson(split[1]));
+            return getJson(split[1]);
         } catch (UnsupportedEncodingException e) {
             //Error
         }
+        String string = null;
+        return string;
     }
 
     private static String getJson(String strEncoded) throws UnsupportedEncodingException{

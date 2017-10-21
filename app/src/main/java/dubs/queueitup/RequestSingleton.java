@@ -16,7 +16,8 @@ public class RequestSingleton {
     private RequestQueue mRequestQueue;
     private ImageLoader mImageLoader;
     private static Context mCtx;
-    private static String auth_token;
+    private static String jwt_token;
+    private static String spotify_auth_token;
 
     private RequestSingleton(Context context) {
         mCtx = context;
@@ -59,13 +60,22 @@ public class RequestSingleton {
         getRequestQueue().add(req);
     }
 
-    public static synchronized void setAuth_token(String authToken) {
-        auth_token = authToken;
+    public static synchronized void setJWT_token(String Token) {
+        jwt_token = Token;
     }
 
-    public static synchronized String getAuth_token() {
-        return auth_token;
+    public static synchronized String getJWT_token() {
+        return jwt_token;
     }
+
+    public static synchronized void setSpotify_auth_token(String authToken) {
+        spotify_auth_token = authToken;
+    }
+
+    public static synchronized String getSpotify_auth_token() {
+        return spotify_auth_token;
+    }
+
 
     public ImageLoader getImageLoader() {
         return mImageLoader;

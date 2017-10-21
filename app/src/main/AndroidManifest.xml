@@ -36,7 +36,15 @@
         </activity>
         <activity android:name=".RequestSingleton" />
         <activity android:name=".LoginActivity" />
-        <activity android:name=".JoinParty"></activity>
+        <activity
+            android:label="@string/join_party"
+            android:name=".JoinParty"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="dubs.queueitup.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

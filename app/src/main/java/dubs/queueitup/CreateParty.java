@@ -1,5 +1,6 @@
 package dubs.queueitup;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -52,7 +53,10 @@ public class CreateParty extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
                         Log.d("CreateParty", "Response is: " + response.toString());
-                        setResult(1338);
+                        Intent intent = new Intent();
+                        intent.putExtra("result_code", 1338);
+
+                        setResult(RESULT_OK, intent);
                         CreateParty.this.finish();
                     }
                 },
@@ -65,7 +69,7 @@ public class CreateParty extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("Authorization", "Bearer " + RequestSingleton.getAuth_token());
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
 
                 return params;
             }
