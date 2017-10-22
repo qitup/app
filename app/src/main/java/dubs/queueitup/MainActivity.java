@@ -14,6 +14,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
@@ -21,10 +22,16 @@ import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
 import com.aurelhubert.ahbottomnavigation.notification.AHNotification;
 import com.spotify.sdk.android.player.Player;
 
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.drafts.Draft_6455;
+import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
     private Player mPlayer;
     private SpotifyApi api;
+    private PartySocket partySocket = null;
     private SpotifyService spotify;
     NoSwiperPager simpleViewPager;
     private WebView mWebview;
@@ -128,15 +136,28 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         } else if(data.getIntExtra("result_code", -1) == 1338){
             if(resultCode == RESULT_OK) {
                 Log.d("Mainactivity", "WOOHOO");
-                frag = pagerAdapter.getRegisteredFragment(0);
-                pagerAdapter.destroyItem(null, 0, frag);
-
+                Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+                try {
+                    partySocket = new PartySocket( new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30 );
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+                partySocket.connect();
             }
         } else if(data.getIntExtra("result_code", -1) == 1339){
             if(resultCode == RESULT_OK) {
                 Log.d("Mainactivity", "WOOHOO2");
-                frag = pagerAdapter.getRegisteredFragment(0);
-                Log.d("MainAct", frag.toString());
+                Toast.makeText(this, "Successfully joined party", Toast.LENGTH_SHORT).show();
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+                try {
+                    partySocket = new PartySocket( new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30 );
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+                partySocket.connect();
             }
         }
     }
@@ -334,4 +355,40 @@ class JWTUtils {
         byte[] decodedBytes = Base64.decode(strEncoded, Base64.URL_SAFE);
         return new String(decodedBytes, "UTF-8");
     }
+}
+
+class PartySocket extends WebSocketClient {
+
+    public PartySocket(URI serverUri , Draft draft,  Map<String,String> httpHeaders, int connectTimeout) {
+        super( serverUri, draft, httpHeaders, connectTimeout);
+    }
+
+    public PartySocket( URI serverURI ) {
+        super( serverURI );
+    }
+
+    @Override
+    public void onOpen( ServerHandshake handshakedata ) {
+        System.out.println( "opened connection" );
+        // if you plan to refuse connection based on ip or httpfields overload: onWebsocketHandshakeReceivedAsClient
+    }
+
+    @Override
+    public void onMessage( String message ) {
+        Log.d("MainActivity" , message );
+    }
+
+    @Override
+    public void onClose( int code, String reason, boolean remote ) {
+        // The codecodes are documented in class org.java_websocket.framing.CloseFrame
+        System.out.println( "Connection closed by " + ( remote ? "remote peer" : "us" ) + " Code: " + code + " Reason: " + reason );
+    }
+
+    @Override
+    public void onError( Exception ex ) {
+        ex.printStackTrace();
+        // if the error is fatal then onClose will be called additionally
+    }
+
+
 }

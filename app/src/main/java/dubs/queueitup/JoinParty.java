@@ -51,6 +51,11 @@ public class JoinParty extends AppCompatActivity {
                         Log.d("JoinParty", "Response is: " + response.toString());
                         Intent intent = new Intent();
                         intent.putExtra("result_code", 1339);
+                        try {
+                            intent.putExtra("socket_url", response.get("url").toString());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
 
                         setResult(RESULT_OK, intent);
 

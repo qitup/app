@@ -8,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.android.volley.*;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -55,7 +56,11 @@ public class CreateParty extends AppCompatActivity {
                         Log.d("CreateParty", "Response is: " + response.toString());
                         Intent intent = new Intent();
                         intent.putExtra("result_code", 1338);
-
+                        try {
+                            intent.putExtra("socket_url", response.get("url").toString());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                         setResult(RESULT_OK, intent);
                         CreateParty.this.finish();
                     }

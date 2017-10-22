@@ -33,8 +33,7 @@ public class SearchPage extends Fragment implements Search.View{
     private SpotifyService spotify;
     private Search.ActionListener mActionListener;
 
-    private LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-    private ScrollListener mScrollListener = new ScrollListener(mLayoutManager);
+    private ScrollListener mScrollListener;
     private SearchResultsAdapter mAdapter;
 
     private class ScrollListener extends ResultListScrollListener {
@@ -106,10 +105,10 @@ public class SearchPage extends Fragment implements Search.View{
 
         RecyclerView resultsList = (RecyclerView) v.findViewById(R.id.search_results);
         resultsList.setHasFixedSize(true);
-        if (resultsList.getLayoutManager() == null){
-            resultsList.setLayoutManager(mLayoutManager);
-        }
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+        resultsList.setLayoutManager(mLayoutManager);
         resultsList.setAdapter(mAdapter);
+        mScrollListener = new ScrollListener(mLayoutManager);
         resultsList.addOnScrollListener(mScrollListener);
 
         // If Activity was recreated wit active search restore it
