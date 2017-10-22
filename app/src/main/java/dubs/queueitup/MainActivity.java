@@ -119,45 +119,45 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        android.app.FragmentManager fm = getFragmentManager();
-        Fragment frag;
-        android.app.FragmentTransaction ft = fm.beginTransaction();
-
-
+//        android.app.FragmentManager fm = getFragmentManager();
+//        Fragment frag;
+//        android.app.FragmentTransaction ft = fm.beginTransaction();
         super.onActivityResult(requestCode, resultCode, data);
-        if (data.getIntExtra("result_code", -1) == 1337) {
-            if(resultCode == RESULT_OK) {
-                RequestSingleton.setJWT_token(data.getStringExtra("auth_token"));
-                RequestSingleton.setSpotify_auth_token(getAuthToken());
-//                SharedPreferences.Editor editor = sharedPref.edit();
-//                editor.putString("auth_token", data.getStringExtra("auth_token"));
-//                editor.apply();
-            }
-        } else if(data.getIntExtra("result_code", -1) == 1338){
-            if(resultCode == RESULT_OK) {
-                Log.d("Mainactivity", "WOOHOO");
-                Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
-                try {
-                    partySocket = new PartySocket( new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30 );
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
+        if (data != null) {
+            if (data.getIntExtra("result_code", -1) == 1337) {
+                if (resultCode == RESULT_OK) {
+                    RequestSingleton.setJWT_token(data.getStringExtra("auth_token"));
+                    RequestSingleton.setSpotify_auth_token(getAuthToken());
+                    //                SharedPreferences.Editor editor = sharedPref.edit();
+                    //                editor.putString("auth_token", data.getStringExtra("auth_token"));
+                    //                editor.apply();
                 }
-                partySocket.connect();
-            }
-        } else if(data.getIntExtra("result_code", -1) == 1339){
-            if(resultCode == RESULT_OK) {
-                Log.d("Mainactivity", "WOOHOO2");
-                Toast.makeText(this, "Successfully joined party", Toast.LENGTH_SHORT).show();
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
-                try {
-                    partySocket = new PartySocket( new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30 );
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
+            } else if (data.getIntExtra("result_code", -1) == 1338) {
+                if (resultCode == RESULT_OK) {
+                    Log.d("Mainactivity", "WOOHOO");
+                    Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+                    try {
+                        partySocket = new PartySocket(new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30);
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
+                    }
+                    partySocket.connect();
                 }
-                partySocket.connect();
+            } else if (data.getIntExtra("result_code", -1) == 1339) {
+                if (resultCode == RESULT_OK) {
+                    Log.d("Mainactivity", "WOOHOO2");
+                    Toast.makeText(this, "Successfully joined party", Toast.LENGTH_SHORT).show();
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+                    try {
+                        partySocket = new PartySocket(new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30);
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
+                    }
+                    partySocket.connect();
+                }
             }
         }
     }
