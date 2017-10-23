@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     Map<String, String> params = new HashMap<String, String>();
                     params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
                     try {
-                        partySocket = new PartySocket(new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30);
+                        partySocket = new PartySocket(getAuthToken(), new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30);
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
                     }
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     Map<String, String> params = new HashMap<String, String>();
                     params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
                     try {
-                        partySocket = new PartySocket(new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30);
+                        partySocket = new PartySocket(getAuthToken(), new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30);
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
                     }
@@ -446,14 +446,18 @@ class JWTUtils {
 
 class PartySocket extends WebSocketClient {
 
-    SpotifyApi spotifyApi = new SpotifyApi();
+    SpotifyApi spotifyApi;
     QueueAdapter mAdapter = null;
 
 
-    private final SpotifyService mSpotifyApi = spotifyApi.getService();
+    private SpotifyService mSpotifyApi = null;
 
-    public PartySocket(URI serverUri , Draft draft,  Map<String,String> httpHeaders, int connectTimeout) {
+    public PartySocket(String accessToken, URI serverUri , Draft draft,  Map<String,String> httpHeaders, int connectTimeout) {
         super( serverUri, draft, httpHeaders, connectTimeout);
+
+        spotifyApi = new SpotifyApi();
+        spotifyApi.setAccessToken(accessToken);
+        mSpotifyApi = spotifyApi.getService();
     }
 
     public PartySocket( URI serverURI ) {
@@ -489,7 +493,12 @@ class PartySocket extends WebSocketClient {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    Track item = mSpotifyApi.getTrack(track.getString("uri"));
+                    String uri = track.getString("uri");
+
+                    String[] parts = uri.split(":");
+                    String id = parts[parts.length - 1];
+
+                    Track item = mSpotifyApi.getTrack(id);
                     tracksToAdd.add(item);
                     mAdapter.addData(tracksToAdd);
             }
