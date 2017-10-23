@@ -52,10 +52,10 @@ public class SearchPage extends Fragment implements Search.View{
         // Required empty public constructor
     }
 
-    searchTextEntered sListener;
+    OnTrackItemSelected sListener;
 
-    public interface searchTextEntered {
-        void searchSpotify(String search_text);
+    public interface OnTrackItemSelected {
+        void addTrack(Track item);
     }
 
 
@@ -99,6 +99,7 @@ public class SearchPage extends Fragment implements Search.View{
         mAdapter = new SearchResultsAdapter(getActivity(), new SearchResultsAdapter.ItemSelectedListener() {
             @Override
             public void onItemSelected(View itemView, Track item) {
+                sListener.addTrack(item);
                 mActionListener.selectTrack(item);
             }
         });

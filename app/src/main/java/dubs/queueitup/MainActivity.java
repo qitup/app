@@ -20,7 +20,12 @@ import com.android.volley.RequestQueue;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
 import com.aurelhubert.ahbottomnavigation.notification.AHNotification;
+import com.spotify.sdk.android.player.Config;
+import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Player;
+import com.spotify.sdk.android.player.PlayerEvent;
+import com.spotify.sdk.android.player.Spotify;
+import com.spotify.sdk.android.player.SpotifyPlayer;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
@@ -37,13 +42,10 @@ import java.util.Map;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
-import kaaes.spotify.webapi.android.models.Album;
-import kaaes.spotify.webapi.android.models.TracksPager;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import kaaes.spotify.webapi.android.models.Track;
+import com.spotify.sdk.android.player.Error;
 
-public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener, SearchPage.searchTextEntered {
+public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener, SearchPage.OnTrackItemSelected, SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
 
     private NoSwiperPager viewPager;
     private AHBottomNavigation bottomNavigation;
@@ -90,18 +92,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Intent intent = new Intent(this, LoginActivity.class);
         startActivityForResult(intent, REQUEST_CODE);
 
-//        sharedPref = getPreferences(Context.MODE_PRIVATE);
-//        auth_token = sharedPref.getString("auth_token", null);
-//
-//        if(auth_token == null){
-//            Intent intent = new Intent(this, LoginActivity.class);
-//            startActivityForResult(intent, REQUEST_CODE);
-//        } else {
-//            Log.d("Main", auth_token);
-//        }
-
-
-
         bottomNavigation.setOnTabSelectedListener(new AHBottomNavigation.OnTabSelectedListener() {
             @Override
             public boolean onTabSelected(int position, boolean wasSelected) {
@@ -145,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         e.printStackTrace();
                     }
                     partySocket.connect();
+                    initPlayer();
                 }
             } else if (data.getIntExtra("result_code", -1) == REQUEST_CODE_JOIN) {
                 if (resultCode == RESULT_OK) {
@@ -210,13 +201,13 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         switch (v.getId()){
             case R.id.createPartyButton:
                 Log.d("MainActivity", "Create party button clicked");
-                Toast.makeText(this, "Creating party", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(this, "Creating party", Toast.LENGTH_SHORT).show();
                 intent = new Intent(this, CreateParty.class);
                 startActivityForResult(intent, REQUEST_CODE_CREATE);
                 break;
             case R.id.joinPartyButton:
                 Log.d("MainActivity", "Join party button clicked");
-                Toast.makeText(this, "Joining party", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(this, "Joining party", Toast.LENGTH_SHORT).show();
                 intent = new Intent(this, JoinParty.class);
                 startActivityForResult(intent, REQUEST_CODE_JOIN);
                 break;
@@ -225,28 +216,51 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     @Override
-    public void searchSpotify(String search_string){
-        SpotifyApi api = new SpotifyApi();
+    public void addTrack(Track track){
+        JSONObject message = new JSONObject();
+        JSONObject queue_item = new JSONObject();
 
-        Map<String, Object> options = new HashMap<>();
-        options.put(SpotifyService.OFFSET, 0);
-        options.put(SpotifyService.LIMIT, 20);
+        try {
+            message.put("type", "queue.add");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-        api.setAccessToken(getAuthToken());
+        try {
+            queue_item.put("type", "spotify_track");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            queue_item.put("uri", track.uri.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-        SpotifyService spotify = api.getService();
+        try {
+            message.put("item", queue_item);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-//        spotify.searchTracks(search_string, options, new SpotifyCallback<TracksPager>() {
-//            @Override
-//            public void success(TracksPager tracksPager, Response response) {
-//                listener.onComplete(tracksPager.tracks.items);
-//            }
-//
-//            @Override
-//            public void failure(SpotifyError error) {
-//                listener.onError(error);
-//            }
-//        });
+        partySocket.send(queue_item.toString());
+    }
+
+    public void initPlayer(){
+        Config playerConfig = new Config(this, RequestSingleton.getSpotify_auth_token(), CLIENT_ID);
+        Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
+            @Override
+            public void onInitialized(SpotifyPlayer spotifyPlayer) {
+                mPlayer = spotifyPlayer;
+                mPlayer.addConnectionStateCallback(MainActivity.this);
+                mPlayer.addNotificationCallback(MainActivity.this);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.e("MainActivity", "Could not initialize player: " + throwable.getMessage());
+            }
+        });
     }
 
 
@@ -336,6 +350,59 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         }
         return auth_token;
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    public void onLoggedIn() {
+        Log.d("MainActivity", "User logged in");
+    }
+
+    @Override
+    public void onLoggedOut() {
+        Log.d("MainActivity", "User logged out");
+    }
+
+    @Override
+    public void onLoginFailed(Error error) {
+        Log.d("MainActivity", "Login failed");
+    }
+
+
+    @Override
+    public void onPlaybackEvent(PlayerEvent playerEvent) {
+        Log.d("MainActivity", "Playback event received: " + playerEvent.name());
+        switch (playerEvent) {
+            // Handle event type as necessary
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onPlaybackError(Error error) {
+        Log.d("MainActivity", "Playback error received: " + error.name());
+        switch (error) {
+            // Handle error type as necessary
+            default:
+                break;
+        }
+    }
+
+
+    @Override
+    public void onTemporaryError() {
+        Log.d("MainActivity", "Temporary error occurred");
+    }
+
+    @Override
+    public void onConnectionMessage(String message) {
+        Log.d("MainActivity", "Received connection message: " + message);
+    }
+
 }
 
 class JWTUtils {
