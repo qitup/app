@@ -244,6 +244,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         }
 
         partySocket.send(queue_item.toString());
+        Log.d("MainActivity", track.uri.toString());
     }
 
     public void initPlayer(){
