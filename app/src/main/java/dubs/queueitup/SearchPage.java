@@ -176,14 +176,14 @@ public class SearchPage extends Fragment implements Search.View{
     }
 
 
-//    @Override
-//    public void onAttach(Context context){
-//        super.onAttach(context);
-//        if (context instanceof searchTextEntered) {
-//            sListener = (searchTextEntered) context;
-//        } else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement searchTextEntered");
-//        }
-//    }
+    @Override
+    public void onAttach(Context context){
+        super.onAttach(context);
+        if (context instanceof OnTrackItemSelected) {
+            sListener = (OnTrackItemSelected) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement searchTextEntered");
+        }
+    }
 }

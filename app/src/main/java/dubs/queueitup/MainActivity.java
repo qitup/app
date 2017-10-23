@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 //        android.app.FragmentTransaction ft = fm.beginTransaction();
         super.onActivityResult(requestCode, resultCode, data);
         if (data != null) {
-            if (data.getIntExtra("result_code", -1) == REQUEST_CODE) {
+            if (requestCode == REQUEST_CODE) {
                 if (resultCode == RESULT_OK) {
                     RequestSingleton.setJWT_token(data.getStringExtra("auth_token"));
                     RequestSingleton.setSpotify_auth_token(getAuthToken());
@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     //                editor.putString("auth_token", data.getStringExtra("auth_token"));
                     //                editor.apply();
                 }
-            } else if (data.getIntExtra("result_code", -1) == REQUEST_CODE_CREATE) {
+            } else if (requestCode == REQUEST_CODE_CREATE) {
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
                     Map<String, String> params = new HashMap<String, String>();
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     partySocket.connect();
                     initPlayer();
                 }
-            } else if (data.getIntExtra("result_code", -1) == REQUEST_CODE_JOIN) {
+            } else if (requestCode == REQUEST_CODE_JOIN) {
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(this, "Successfully joined party", Toast.LENGTH_SHORT).show();
                     Map<String, String> params = new HashMap<String, String>();
