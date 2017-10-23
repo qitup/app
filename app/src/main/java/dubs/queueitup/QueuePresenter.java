@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -51,14 +52,11 @@ public class QueuePresenter implements Search.ActionListener {
         }
     }
 
-    public void addQueueItem(String id){
-        List<Track> tracksToAdd = new ArrayList<>();
-
+    public void addQueueItem(final String id) {
         mSpotifyApi = spotifyApi.getService();
 
-        Track item = mSpotifyApi.getTrack(id);
-        tracksToAdd.add(item);
-        mView.addData(tracksToAdd);
+        LoadTrackTask task = new LoadTrackTask();
+        task.execute(id);
     }
 
 
@@ -85,7 +83,8 @@ public class QueuePresenter implements Search.ActionListener {
 
 
     @Override
-    public void destroy() {    }
+    public void destroy() {
+    }
 
     @Override
     @Nullable
@@ -140,5 +139,20 @@ public class QueuePresenter implements Search.ActionListener {
     private void logMessage(String msg) {
         Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
         Log.d(TAG, msg);
+    }
+
+    private class LoadTrackTask extends AsyncTask<String, Integer, Track> {
+        @Override
+        protected Track doInBackground(String... strings) {
+            return mSpotifyApi.getTrack(strings[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Track result) {
+            List<Track> tracksToAdd = new ArrayList<>();
+
+            tracksToAdd.add(result);
+            mView.addData(tracksToAdd);
+        }
     }
 }
