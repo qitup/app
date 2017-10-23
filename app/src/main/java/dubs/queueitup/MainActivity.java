@@ -90,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         addBottomNavigationItems();
 
         Intent intent = new Intent(this, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivityForResult(intent, REQUEST_CODE);
 
         bottomNavigation.setOnTabSelectedListener(new AHBottomNavigation.OnTabSelectedListener() {
