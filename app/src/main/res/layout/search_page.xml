@@ -9,25 +9,11 @@
     tools:layout_editor_absoluteY="25dp"
     tools:layout_editor_absoluteX="0dp">
 
-    <!--<EditText-->
-        <!--android:id="@+id/search_input"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="49dp"-->
-        <!--android:background="@color/tabbar_background"-->
-        <!--android:ems="10"-->
-        <!--android:hint="@string/search"-->
-        <!--android:inputType="text"-->
-        <!--android:paddingLeft="8dp"-->
-        <!--android:paddingRight="8dp"-->
-        <!--android:textColor="@color/selectedTextColor"-->
-        <!--android:textColorHint="@color/tabTextColor"-->
-        <!--tools:layout_editor_absoluteY="0dp"-->
-        <!--tools:layout_editor_absoluteX="0dp" />-->
     <SearchView
         android:id="@+id/search_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorTopBottomBar"
+        android:background="@color/textColorDefault"
         android:iconifiedByDefault="false"
         android:queryHint="@string/search_hint" />
 
