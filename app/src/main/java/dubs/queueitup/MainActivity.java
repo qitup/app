@@ -446,11 +446,12 @@ class JWTUtils {
 
 class PartySocket extends WebSocketClient {
 
-    SpotifyApi spotifyApi = new SpotifyApi();
+    private SpotifyApi spotifyApi = new SpotifyApi();
     QueueAdapter mAdapter = null;
 
 
     private final SpotifyService mSpotifyApi = spotifyApi.getService();
+
 
     public PartySocket(URI serverUri , Draft draft,  Map<String,String> httpHeaders, int connectTimeout) {
         super( serverUri, draft, httpHeaders, connectTimeout);
@@ -489,7 +490,7 @@ class PartySocket extends WebSocketClient {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    Track item = mSpotifyApi.getTrack(track.getString("uri"));
+                    Track item = mSpotifyApi.getTrack(track.getString("id"));
                     tracksToAdd.add(item);
                     mAdapter.addData(tracksToAdd);
             }
