@@ -67,7 +67,7 @@ public class SearchPresenter implements Search.ActionListener {
     @Override
     public void search(@Nullable String searchQuery) {
         if (searchQuery != null && !searchQuery.isEmpty() && !searchQuery.equals(mCurrentQuery)) {
-            logMessage("query text submit " + searchQuery);
+//            logMessage("query text submit " + searchQuery);
             mCurrentQuery = searchQuery;
             mView.reset();
             mSearchListener = new SearchPager.CompleteListener() {

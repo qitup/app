@@ -8,6 +8,7 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.util.Base64;
@@ -93,18 +94,28 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivityForResult(intent, REQUEST_CODE);
 
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                bottomNavigation.setCurrentItem(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
         bottomNavigation.setOnTabSelectedListener(new AHBottomNavigation.OnTabSelectedListener() {
             @Override
             public boolean onTabSelected(int position, boolean wasSelected) {
-//                fragment.updateColor(ContextCompat.getColor(MainActivity.this, colors[position]));
-
                 if (!wasSelected)
                     viewPager.setCurrentItem(position);
-
-                // remove notification badge
-                int lastItemPos = bottomNavigation.getItemsCount() - 1;
-                if (notificationVisible && position == lastItemPos)
-                    bottomNavigation.setNotification(new AHNotification(), lastItemPos);
 
                 return true;
             }
@@ -112,9 +123,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        android.app.FragmentManager fm = getFragmentManager();
-//        Fragment frag;
-//        android.app.FragmentTransaction ft = fm.beginTransaction();
+
         super.onActivityResult(requestCode, resultCode, data);
         if (data != null) {
             if (requestCode == REQUEST_CODE) {
@@ -222,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         JSONObject queue_item = new JSONObject();
 
         try {
-            message.put("type", "queue.add");
+            message.put("type", "queue.push");
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -244,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             e.printStackTrace();
         }
 
-        partySocket.send(queue_item.toString());
+        partySocket.send(message.toString());
         Log.d("MainActivity", track.uri.toString());
     }
 
@@ -446,7 +455,11 @@ class PartySocket extends WebSocketClient {
 
     @Override
     public void onMessage( String message ) {
-        Log.d("MainActivity" , message );
+
+        switch (message){
+            case "queue.push":
+
+        }
     }
 
     @Override

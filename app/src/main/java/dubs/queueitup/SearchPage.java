@@ -100,7 +100,7 @@ public class SearchPage extends Fragment implements Search.View{
             @Override
             public void onItemSelected(View itemView, Track item) {
                 sListener.addTrack(item);
-                mActionListener.selectTrack(item);
+//                mActionListener.selectTrack(item);
             }
         });
 
