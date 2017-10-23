@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private SpotifyApi api;
     private PartySocket partySocket = null;
     private QueueAdapter mAdapter = null;
+    private QueuePresenter mPresenter = null;
     NoSwiperPager simpleViewPager;
     private WebView mWebview;
     private String auth_token;
@@ -142,29 +143,33 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
                     Map<String, String> params = new HashMap<String, String>();
                     params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+                    mAdapter = RequestSingleton.getInstance(this).getmAdapter();
+                    mPresenter = RequestSingleton.getInstance(this).getmPresenter();
                     try {
-                        partySocket = new PartySocket(getAuthToken(), new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30);
+                        partySocket = new PartySocket(getAuthToken(), mAdapter, mPresenter, new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30);
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
                     }
                     partySocket.connect();
                     initPlayer();
-                    mAdapter = new QueueAdapter(this);
-                    partySocket.setQueue(mAdapter);
+
+                    RequestSingleton.getInstance(this).setmAdapter(mAdapter);
                 }
             } else if (requestCode == REQUEST_CODE_JOIN) {
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(this, "Successfully joined party", Toast.LENGTH_SHORT).show();
                     Map<String, String> params = new HashMap<String, String>();
                     params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+                    mAdapter = RequestSingleton.getInstance(this).getmAdapter();
+                    mPresenter = RequestSingleton.getInstance(this).getmPresenter();
                     try {
-                        partySocket = new PartySocket(getAuthToken(), new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30);
+                        partySocket = new PartySocket(getAuthToken(), mAdapter, mPresenter, new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30);
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
                     }
                     partySocket.connect();
-                    mAdapter = new QueueAdapter(this);
-                    partySocket.setQueue(mAdapter);
+
+                    RequestSingleton.getInstance(this).setmAdapter(mAdapter);
                 }
             }
         }
@@ -447,17 +452,20 @@ class JWTUtils {
 class PartySocket extends WebSocketClient {
 
     SpotifyApi spotifyApi;
-    QueueAdapter mAdapter = null;
+    QueueAdapter mAdapter;
+    QueuePresenter mPresenter;
 
 
     private SpotifyService mSpotifyApi = null;
 
-    public PartySocket(String accessToken, URI serverUri , Draft draft,  Map<String,String> httpHeaders, int connectTimeout) {
+    public PartySocket(String accessToken, QueueAdapter queue, QueuePresenter presenter, URI serverUri , Draft draft,  Map<String,String> httpHeaders, int connectTimeout) {
         super( serverUri, draft, httpHeaders, connectTimeout);
 
         spotifyApi = new SpotifyApi();
         spotifyApi.setAccessToken(accessToken);
         mSpotifyApi = spotifyApi.getService();
+        mAdapter = queue;
+        mPresenter = presenter;
     }
 
     public PartySocket( URI serverURI ) {
@@ -470,15 +478,10 @@ class PartySocket extends WebSocketClient {
         // if you plan to refuse connection based on ip or httpfields overload: onWebsocketHandshakeReceivedAsClient
     }
 
-    public void setQueue(QueueAdapter queue){
-        mAdapter = queue;
-    }
-
     @Override
     public void onMessage( String message ) {
         JSONObject response = null;
         JSONObject track = null;
-        List<Track> tracksToAdd = new ArrayList<>();
 
         try {
             response = new JSONObject(message);
@@ -498,9 +501,7 @@ class PartySocket extends WebSocketClient {
                     String[] parts = uri.split(":");
                     String id = parts[parts.length - 1];
 
-                    Track item = mSpotifyApi.getTrack(id);
-                    tracksToAdd.add(item);
-                    mAdapter.addData(tracksToAdd);
+                    mPresenter.addQueueItem(id);
             }
         } catch (JSONException e) {
             e.printStackTrace();

@@ -5,11 +5,22 @@ package dubs.queueitup;
  */
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class QueuePage extends Fragment {
+import java.util.List;
+
+import kaaes.spotify.webapi.android.models.Track;
+
+public class QueuePage extends Fragment implements Search.View {
+
+    QueueAdapter mAdapter;
+    private QueuePresenter mPresenter;
+
 
     public QueuePage() {
 // Required empty public constructor
@@ -24,8 +35,39 @@ public class QueuePage extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.queue_page, container, false);
+        View v = inflater.inflate(R.layout.queue_page, container, false);
+
+        mPresenter = new QueuePresenter(getActivity(), this);
+        mPresenter.init(RequestSingleton.getSpotify_auth_token());
+
+        RecyclerView resultsList = (RecyclerView) v.findViewById(R.id.queue_list);
+        resultsList.setHasFixedSize(true);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+        resultsList.setLayoutManager(mLayoutManager);
+
+        mAdapter = new QueueAdapter(getActivity(), new QueueAdapter.ItemVotedListener(){
+            @Override
+            public void onItemVoted(View itemView, Track item) {
+                Log.d("QueuePage", "Vote submitted");
+            }
+        });
+        RequestSingleton.getInstance(getActivity()).setmAdapter(mAdapter);
+        RequestSingleton.getInstance(getActivity()).setmPresenter(mPresenter);
+        resultsList.setAdapter(mAdapter);
+
+        return v;
+
     }
 
+
+    @Override
+    public void reset() {
+        mAdapter.clearData();
+    }
+
+    @Override
+    public void addData(List<Track> items) {
+        mAdapter.addData(items);
+    }
 }
 
