@@ -51,14 +51,16 @@ public class QueuePage extends Fragment implements Search.View {
                 Log.d("QueuePage", "Vote submitted");
             }
         });
-        RequestSingleton.getInstance(getActivity()).setmAdapter(mAdapter);
-        RequestSingleton.getInstance(getActivity()).setmPresenter(mPresenter);
+
         resultsList.setAdapter(mAdapter);
 
         return v;
 
     }
 
+    public QueuePresenter getPresenter() {
+        return mPresenter;
+    }
 
     @Override
     public void reset() {

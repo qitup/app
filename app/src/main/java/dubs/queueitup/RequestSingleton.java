@@ -16,7 +16,6 @@ public class RequestSingleton {
     private RequestQueue mRequestQueue;
     private ImageLoader mImageLoader;
     private static Context mCtx;
-    private QueueAdapter mAdapter;
     private static String jwt_token;
     private static String spotify_auth_token;
     private QueuePresenter mPresenter;
@@ -66,20 +65,12 @@ public class RequestSingleton {
         jwt_token = Token;
     }
 
-    public void setmAdapter(QueueAdapter queue){
-        mAdapter = queue;
-    }
-
     public QueuePresenter getmPresenter(){
         return mPresenter;
     }
 
     public void setmPresenter(QueuePresenter queue){
         mPresenter = queue;
-    }
-
-    public QueueAdapter getmAdapter(){
-        return mAdapter;
     }
 
     public static synchronized String getJWT_token() {

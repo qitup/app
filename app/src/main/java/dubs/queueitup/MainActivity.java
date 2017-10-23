@@ -20,7 +20,6 @@ import android.widget.Toast;
 import com.android.volley.RequestQueue;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
-import com.aurelhubert.ahbottomnavigation.notification.AHNotification;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Player;
@@ -38,11 +37,8 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
@@ -141,38 +137,72 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             } else if (requestCode == REQUEST_CODE_CREATE) {
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
-                    Map<String, String> params = new HashMap<String, String>();
-                    params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
-                    mAdapter = RequestSingleton.getInstance(this).getmAdapter();
-                    mPresenter = RequestSingleton.getInstance(this).getmPresenter();
+
+                    mPresenter = ((QueuePage) pagerAdapter.getItem(1)).getPresenter();
                     try {
-                        partySocket = new PartySocket(getAuthToken(), mAdapter, mPresenter, new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30);
+                        partySocket = newPartySocket(new URI(data.getStringExtra("socket_url")));
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
                     }
                     partySocket.connect();
                     initPlayer();
-
-                    RequestSingleton.getInstance(this).setmAdapter(mAdapter);
                 }
             } else if (requestCode == REQUEST_CODE_JOIN) {
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(this, "Successfully joined party", Toast.LENGTH_SHORT).show();
-                    Map<String, String> params = new HashMap<String, String>();
-                    params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
-                    mAdapter = RequestSingleton.getInstance(this).getmAdapter();
-                    mPresenter = RequestSingleton.getInstance(this).getmPresenter();
+
+                    mPresenter = ((QueuePage) pagerAdapter.getItem(1)).getPresenter();
                     try {
-                        partySocket = new PartySocket(getAuthToken(), mAdapter, mPresenter, new URI(data.getStringExtra("socket_url")), new Draft_6455(), params, 30);
+                        partySocket = newPartySocket(new URI(data.getStringExtra("socket_url")));
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
                     }
                     partySocket.connect();
-
-                    RequestSingleton.getInstance(this).setmAdapter(mAdapter);
                 }
             }
         }
+    }
+
+    private PartySocket newPartySocket(URI uri) {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+
+        return new PartySocket(getAuthToken(), uri, new Draft_6455(), params, 30) {
+            @Override
+            public void onMessage(String message) {
+                JSONObject response = null;
+                JSONObject track = null;
+
+                try {
+                    response = new JSONObject(message);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    switch (response.getString("type")) {
+                        case "queue.push":
+                            try {
+                                track = response.getJSONObject("item");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            String uri = track.getString("uri");
+
+                            String[] parts = uri.split(":");
+                            final String id = parts[parts.length - 1];
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mPresenter.addQueueItem(id);
+                                }
+                            });
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
     }
 
     public static String getHost() {
@@ -194,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     @NonNull
     private Fragment createFragment(int type) {
         Fragment fragment = new PartyPage();
-        switch(type){
+        switch (type) {
             case 0:
                 fragment = new PartyPage();
                 break;
@@ -219,8 +249,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     // Fragment interface overrides
 
     @Override
-    public void onCreateParty(View v){
-        switch (v.getId()){
+    public void onCreateParty(View v) {
+        switch (v.getId()) {
             case R.id.createPartyButton:
                 Log.d("MainActivity", "Create party button clicked");
 //                Toast.makeText(this, "Creating party", Toast.LENGTH_SHORT).show();
@@ -238,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     @Override
-    public void addTrack(Track track){
+    public void addTrack(Track track) {
         JSONObject message = new JSONObject();
         JSONObject queue_item = new JSONObject();
 
@@ -269,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Log.d("MainActivity", track.uri.toString());
     }
 
-    public void initPlayer(){
+    public void initPlayer() {
         Config playerConfig = new Config(this, RequestSingleton.getSpotify_auth_token(), CLIENT_ID);
         Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
             @Override
@@ -346,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
 
-    public String getAuthToken(){
+    public String getAuthToken() {
         String jwt_token = null;
 
 
@@ -443,7 +473,7 @@ class JWTUtils {
         return string;
     }
 
-    private static String getJson(String strEncoded) throws UnsupportedEncodingException{
+    private static String getJson(String strEncoded) throws UnsupportedEncodingException {
         byte[] decodedBytes = Base64.decode(strEncoded, Base64.URL_SAFE);
         return new String(decodedBytes, "UTF-8");
     }
@@ -452,73 +482,42 @@ class JWTUtils {
 class PartySocket extends WebSocketClient {
 
     SpotifyApi spotifyApi;
-    QueueAdapter mAdapter;
-    QueuePresenter mPresenter;
 
 
     private SpotifyService mSpotifyApi = null;
 
-    public PartySocket(String accessToken, QueueAdapter queue, QueuePresenter presenter, URI serverUri , Draft draft,  Map<String,String> httpHeaders, int connectTimeout) {
-        super( serverUri, draft, httpHeaders, connectTimeout);
+    public PartySocket(String accessToken, URI serverUri, Draft draft, Map<String, String> httpHeaders, int connectTimeout) {
+        super(serverUri, draft, httpHeaders, connectTimeout);
 
         spotifyApi = new SpotifyApi();
         spotifyApi.setAccessToken(accessToken);
         mSpotifyApi = spotifyApi.getService();
-        mAdapter = queue;
-        mPresenter = presenter;
     }
 
-    public PartySocket( URI serverURI ) {
-        super( serverURI );
+    public PartySocket(URI serverURI) {
+        super(serverURI);
     }
 
     @Override
-    public void onOpen( ServerHandshake handshakedata ) {
-        System.out.println( "opened connection" );
+    public void onOpen(ServerHandshake handshakedata) {
+        System.out.println("opened connection");
         // if you plan to refuse connection based on ip or httpfields overload: onWebsocketHandshakeReceivedAsClient
     }
 
     @Override
-    public void onMessage( String message ) {
-        JSONObject response = null;
-        JSONObject track = null;
+    public void onMessage(String message) {
 
-        try {
-            response = new JSONObject(message);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        try {
-            switch (response.getString("type")){
-                case "queue.push":
-                    try {
-                        track = response.getJSONObject("item");
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    String uri = track.getString("uri");
-
-                    String[] parts = uri.split(":");
-                    String id = parts[parts.length - 1];
-
-                    mPresenter.addQueueItem(id);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
-    public void onClose( int code, String reason, boolean remote ) {
+    public void onClose(int code, String reason, boolean remote) {
         // The codecodes are documented in class org.java_websocket.framing.CloseFrame
-        System.out.println( "Connection closed by " + ( remote ? "remote peer" : "us" ) + " Code: " + code + " Reason: " + reason );
+        System.out.println("Connection closed by " + (remote ? "remote peer" : "us") + " Code: " + code + " Reason: " + reason);
     }
 
     @Override
-    public void onError( Exception ex ) {
+    public void onError(Exception ex) {
         ex.printStackTrace();
         // if the error is fatal then onClose will be called additionally
     }
-
-
 }

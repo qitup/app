@@ -49,7 +49,6 @@ public class QueuePresenter implements Search.ActionListener {
         } else {
             logError("No valid access token");
         }
-
     }
 
     public void addQueueItem(String id){
