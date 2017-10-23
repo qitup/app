@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private static final String CLIENT_ID = "SPOTIFY_ID";
     private static final String REDIRECT_URI = "queueitup-login://callback";
     private static final int REQUEST_CODE = 1337;
+    private static final int REQUEST_CODE_CREATE = 1338;
+    private static final int REQUEST_CODE_JOIN = 1339;
 
 
     private Player mPlayer;
@@ -124,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 //        android.app.FragmentTransaction ft = fm.beginTransaction();
         super.onActivityResult(requestCode, resultCode, data);
         if (data != null) {
-            if (data.getIntExtra("result_code", -1) == 1337) {
+            if (data.getIntExtra("result_code", -1) == REQUEST_CODE) {
                 if (resultCode == RESULT_OK) {
                     RequestSingleton.setJWT_token(data.getStringExtra("auth_token"));
                     RequestSingleton.setSpotify_auth_token(getAuthToken());
@@ -132,9 +134,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     //                editor.putString("auth_token", data.getStringExtra("auth_token"));
                     //                editor.apply();
                 }
-            } else if (data.getIntExtra("result_code", -1) == 1338) {
+            } else if (data.getIntExtra("result_code", -1) == REQUEST_CODE_CREATE) {
                 if (resultCode == RESULT_OK) {
-                    Log.d("Mainactivity", "WOOHOO");
                     Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
                     Map<String, String> params = new HashMap<String, String>();
                     params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
@@ -145,9 +146,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     }
                     partySocket.connect();
                 }
-            } else if (data.getIntExtra("result_code", -1) == 1339) {
+            } else if (data.getIntExtra("result_code", -1) == REQUEST_CODE_JOIN) {
                 if (resultCode == RESULT_OK) {
-                    Log.d("Mainactivity", "WOOHOO2");
                     Toast.makeText(this, "Successfully joined party", Toast.LENGTH_SHORT).show();
                     Map<String, String> params = new HashMap<String, String>();
                     params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
@@ -210,13 +210,15 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         switch (v.getId()){
             case R.id.createPartyButton:
                 Log.d("MainActivity", "Create party button clicked");
+                Toast.makeText(this, "Creating party", Toast.LENGTH_SHORT).show();
                 intent = new Intent(this, CreateParty.class);
-                startActivityForResult(intent, 1338);
+                startActivityForResult(intent, REQUEST_CODE_CREATE);
                 break;
             case R.id.joinPartyButton:
                 Log.d("MainActivity", "Join party button clicked");
+                Toast.makeText(this, "Joining party", Toast.LENGTH_SHORT).show();
                 intent = new Intent(this, JoinParty.class);
-                startActivityForResult(intent, 1339);
+                startActivityForResult(intent, REQUEST_CODE_JOIN);
                 break;
         }
 
