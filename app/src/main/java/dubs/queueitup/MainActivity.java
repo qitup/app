@@ -38,8 +38,11 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
@@ -62,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private Player mPlayer;
     private SpotifyApi api;
     private PartySocket partySocket = null;
-    private SpotifyService spotify;
+    private QueueAdapter mAdapter = null;
     NoSwiperPager simpleViewPager;
     private WebView mWebview;
     private String auth_token;
@@ -146,6 +149,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     }
                     partySocket.connect();
                     initPlayer();
+                    mAdapter = new QueueAdapter(this);
+                    partySocket.setQueue(mAdapter);
                 }
             } else if (requestCode == REQUEST_CODE_JOIN) {
                 if (resultCode == RESULT_OK) {
@@ -158,6 +163,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         e.printStackTrace();
                     }
                     partySocket.connect();
+                    mAdapter = new QueueAdapter(this);
+                    partySocket.setQueue(mAdapter);
                 }
             }
         }
@@ -439,6 +446,12 @@ class JWTUtils {
 
 class PartySocket extends WebSocketClient {
 
+    SpotifyApi spotifyApi = new SpotifyApi();
+    QueueAdapter mAdapter = null;
+
+
+    private final SpotifyService mSpotifyApi = spotifyApi.getService();
+
     public PartySocket(URI serverUri , Draft draft,  Map<String,String> httpHeaders, int connectTimeout) {
         super( serverUri, draft, httpHeaders, connectTimeout);
     }
@@ -453,12 +466,35 @@ class PartySocket extends WebSocketClient {
         // if you plan to refuse connection based on ip or httpfields overload: onWebsocketHandshakeReceivedAsClient
     }
 
+    public void setQueue(QueueAdapter queue){
+        mAdapter = queue;
+    }
+
     @Override
     public void onMessage( String message ) {
+        JSONObject response = null;
+        JSONObject track = null;
+        List<Track> tracksToAdd = new ArrayList<>();
 
-        switch (message){
-            case "queue.push":
-
+        try {
+            response = new JSONObject(message);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            switch (response.getString("type")){
+                case "queue.push":
+                    try {
+                        track = response.getJSONObject("item");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Track item = mSpotifyApi.getTrack(track.getString("uri"));
+                    tracksToAdd.add(item);
+                    mAdapter.addData(tracksToAdd);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 

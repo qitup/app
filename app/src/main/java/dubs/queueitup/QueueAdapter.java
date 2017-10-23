@@ -26,7 +26,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
 
     private final List<Track> mItems = new ArrayList<>();
     private final Context mContext;
-    private final ItemVotedListener mListener;
+//    private final ItemVotedListener mListener;
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -45,7 +45,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
         @Override
         public void onClick(View v) {
             notifyItemChanged(getLayoutPosition());
-            mListener.onItemVoted(v, mItems.get(getAdapterPosition()));
+//            mListener.onItemVoted(v, mItems.get(getAdapterPosition()));
         }
     }
 
@@ -53,9 +53,13 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
         void onItemVoted(View itemView, Track item);
     }
 
+    public QueueAdapter(Context context) {
+        mContext = context;
+    }
+
     public QueueAdapter(Context context, ItemVotedListener listener) {
         mContext = context;
-        mListener = listener;
+//        mListener = listener;
     }
 
     public void clearData() {
