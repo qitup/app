@@ -1,14 +1,15 @@
 package dubs.queueitup;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.ServiceConnection;
 import android.os.AsyncTask;
-import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.spotify.sdk.android.player.Config;
+import com.spotify.sdk.android.player.Spotify;
+import com.spotify.sdk.android.player.SpotifyPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ import kaaes.spotify.webapi.android.models.Track;
 public class QueuePresenter implements Search.ActionListener {
     private static final String TAG = SearchPresenter.class.getSimpleName();
     public static final int PAGE_SIZE = 20;
+    private static final String CLIENT_ID = "SPOTIFY_ID";
 
     private final Context mContext;
     private final Search.View mView;
@@ -34,7 +36,7 @@ public class QueuePresenter implements Search.ActionListener {
     private SearchPager mSearchPager;
     private SearchPager.CompleteListener mSearchListener;
 
-    private Player mPlayer;
+    private SpotifyPlayer mPlayer;
 
     public QueuePresenter(Context context, Search.View view) {
         mContext = context;
@@ -115,19 +117,6 @@ public class QueuePresenter implements Search.ActionListener {
         if (previewUrl == null) {
             logMessage("Track doesn't have a preview");
             return;
-        }
-
-        if (mPlayer == null) return;
-
-        String currentTrackUrl;
-        currentTrackUrl = mPlayer.getCurrentTrack();
-
-        if (currentTrackUrl == null || !currentTrackUrl.equals(previewUrl)) {
-            mPlayer.play(previewUrl);
-        } else if (mPlayer.isPlaying()) {
-            mPlayer.pause();
-        } else {
-            mPlayer.resume();
         }
     }
 

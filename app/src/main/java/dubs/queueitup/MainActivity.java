@@ -45,7 +45,7 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
 import com.spotify.sdk.android.player.Error;
 
-public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener, SearchPage.OnTrackItemSelected, SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
+public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener, SearchPage.OnTrackItemSelected, SpotifyPlayer.NotificationCallback, ConnectionStateCallback, QueuePage.OnQueueItemSelected {
 
     private NoSwiperPager viewPager;
     private AHBottomNavigation bottomNavigation;
@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         e.printStackTrace();
                     }
                     partySocket.connect();
+                    initPlayer();
                 }
             }
         }
@@ -167,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Map<String, String> params = new HashMap<String, String>();
         params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
 
-        return new PartySocket(getAuthToken(), uri, new Draft_6455(), params, 60) {
+        return new PartySocket(getAuthToken(), uri, new Draft_6455(), params, 3000) {
             @Override
             public void onMessage(String message) {
                 JSONObject response = null;
@@ -195,8 +196,10 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                 @Override
                                 public void run() {
                                     mPresenter.addQueueItem(id);
+                                    Toast.makeText(getApplicationContext(), "Added song to queue", Toast.LENGTH_SHORT).show();
                                 }
                             });
+
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -314,6 +317,10 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 Log.e("MainActivity", "Could not initialize player: " + throwable.getMessage());
             }
         });
+    }
+
+    public void playTrack(Track item){
+        mPlayer.playUri(null, item.uri, 0, 0);
     }
 
 

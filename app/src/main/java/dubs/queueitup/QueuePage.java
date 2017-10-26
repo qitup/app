@@ -3,6 +3,7 @@ package dubs.queueitup;
 /**
  * Created by ryanschott on 2017-09-28.
  */
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,11 +21,17 @@ public class QueuePage extends Fragment implements Search.View {
 
     QueueAdapter mAdapter;
     private QueuePresenter mPresenter;
+    OnQueueItemSelected sListener;
 
 
     public QueuePage() {
 // Required empty public constructor
     }
+
+    public interface OnQueueItemSelected {
+        void playTrack(Track item);
+    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,10 +56,12 @@ public class QueuePage extends Fragment implements Search.View {
             @Override
             public void onItemVoted(View itemView, Track item) {
                 Log.d("QueuePage", "Vote submitted");
+                sListener.playTrack(item);
             }
         });
 
         resultsList.setAdapter(mAdapter);
+
 
         return v;
 
@@ -70,6 +79,17 @@ public class QueuePage extends Fragment implements Search.View {
     @Override
     public void addData(List<Track> items) {
         mAdapter.addData(items);
+    }
+
+    @Override
+    public void onAttach(Context context){
+        super.onAttach(context);
+        if (context instanceof OnQueueItemSelected) {
+            sListener = (OnQueueItemSelected) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement searchTextEntered");
+        }
     }
 }
 
