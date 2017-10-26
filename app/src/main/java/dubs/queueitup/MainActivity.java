@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
+                bottomNavigation.restoreBottomNavigation();
             }
 
             @Override
@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Map<String, String> params = new HashMap<String, String>();
         params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
 
-        return new PartySocket(getAuthToken(), uri, new Draft_6455(), params, 30) {
+        return new PartySocket(getAuthToken(), uri, new Draft_6455(), params, 60) {
             @Override
             public void onMessage(String message) {
                 JSONObject response = null;
@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     switch (response.getString("type")) {
                         case "queue.push":
                             try {
-                                track = response.getJSONObject("item");
+                                track = response.getJSONObject("added").getJSONObject("item");
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
