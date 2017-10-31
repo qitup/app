@@ -6,7 +6,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
@@ -163,13 +162,15 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     Bundle buns = data.getExtras();
                     Party party = (Party) buns.getParcelable("party_details");
 
-                    ViewGroup vg = (ViewGroup) findViewById(R.id.viewpager);
-                    pagerAdapter.instantiateItem(vg, 0);
-                    pagerAdapter.swapFragmentAt(createFragment(3), 0);
-                    viewPager.getAdapter().notifyDataSetChanged();
-//                    viewPager.setCurrentItem(2);
+                    Bundle args = createFragmentBundle();
+                    args.putParcelable("party", party);
 
-                    ((PartyDetailsPage) pagerAdapter.getItem(0)).setupParty(party);
+                    try {
+                        pagerAdapter.swapFragmentAt(createFragment(3, args), 0);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    viewPager.getAdapter().notifyDataSetChanged();
 
                     mPresenter = ((QueuePage) pagerAdapter.getItem(1)).getPresenter();
                     try {
@@ -237,20 +238,21 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         viewPager.setPagingEnabled(true);
         pagerAdapter = new BottomBarAdapter(getSupportFragmentManager());
 
-        pagerAdapter.addFragments(createFragment(0));
-        pagerAdapter.addFragments(createFragment(1));
-        pagerAdapter.addFragments(createFragment(2));
-
-//        pagerAdapter.instantiateItem((ViewGroup)findViewById(R.id.partyPagelayout), 0);
-//        pagerAdapter.instantiateItem((ViewGroup)findViewById(R.id.queuePageLayout), 0);
-//        pagerAdapter.instantiateItem((ViewGroup)findViewById(R.id.searchPageLayout), 0);
+        try {
+            pagerAdapter.addFragments(createFragment(0, createFragmentBundle()));
+            pagerAdapter.addFragments(createFragment(1, createFragmentBundle()));
+            pagerAdapter.addFragments(createFragment(2, createFragmentBundle()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         viewPager.setAdapter(pagerAdapter);
     }
 
     @NonNull
-    private Fragment createFragment(int type) {
-        Fragment fragment = new PartyPage();
+    private Fragment createFragment(int type, Bundle arguments) throws Exception {
+        Fragment fragment;
+
         switch (type) {
             case 0:
                 fragment = new PartyPage();
@@ -263,15 +265,20 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 break;
             case 3:
                 fragment = new PartyDetailsPage();
+                break;
+            default:
+                throw new Exception("Invalid fragment type");
         }
-        fragment.setArguments(passFragmentArguments(R.color.textColorDefault));
+
+        fragment.setArguments(arguments);
+
         return fragment;
     }
 
     @NonNull
-    private Bundle passFragmentArguments(int color) {
+    private Bundle createFragmentBundle() {
         Bundle bundle = new Bundle();
-        bundle.putInt("color", color);
+        bundle.putInt("color", R.color.textColorDefault);
         return bundle;
     }
 
@@ -345,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         });
     }
 
-    public void playTrack(Track item){
+    public void playTrack(Track item) {
         mPlayer.playUri(null, item.uri, 0, 0);
     }
 
