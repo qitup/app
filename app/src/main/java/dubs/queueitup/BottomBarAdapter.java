@@ -3,6 +3,7 @@ package dubs.queueitup;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,14 @@ public class BottomBarAdapter extends SmartFragmentStatePagerAdapter {
     // Our custom method that populates this Adapter with Fragments
     public void addFragments(Fragment fragment) {
         fragments.add(fragment);
+
     }
+
+    public void swapFragmentAt(Fragment fragment, int index){
+        fragments.remove(index);
+        fragments.add(index, fragment);
+    }
+
 
     @Override
     public Fragment getItem(int position) {

@@ -33,4 +33,5 @@
     <string name="title_activity_create_party">CreateParty</string>
     <string name="cover_art_description">Cover Art</string>
     <string name="search_hint">Search</string>
+    <string name="join_code">Join Code:</string>
 </resources>

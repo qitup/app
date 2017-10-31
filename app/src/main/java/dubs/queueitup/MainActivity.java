@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
@@ -14,6 +15,7 @@ import android.support.v7.app.AppCompatDelegate;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Toast;
 
@@ -40,6 +42,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
+import dubs.queueitup.Models.Party;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
@@ -139,6 +142,12 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
 
                     mPresenter = ((QueuePage) pagerAdapter.getItem(1)).getPresenter();
+//                    pagerAdapter.swapFragmentAt(createFragment(3), 0);
+//                    viewPager.getAdapter().notifyDataSetChanged();
+//                    Party party = (Party) data.getParcelableExtra("party");
+//
+//                    ((PartyDetailsPage) pagerAdapter.getItem(0)).setupParty(party);
+
                     try {
                         partySocket = newPartySocket(new URI(data.getStringExtra("socket_url")));
                     } catch (URISyntaxException e) {
@@ -151,9 +160,20 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(this, "Successfully joined party", Toast.LENGTH_SHORT).show();
 
+                    Bundle buns = data.getExtras();
+                    Party party = (Party) buns.getParcelable("party_details");
+
+                    ViewGroup vg = (ViewGroup) findViewById(R.id.viewpager);
+                    pagerAdapter.instantiateItem(vg, 0);
+                    pagerAdapter.swapFragmentAt(createFragment(3), 0);
+                    viewPager.getAdapter().notifyDataSetChanged();
+//                    viewPager.setCurrentItem(2);
+
+                    ((PartyDetailsPage) pagerAdapter.getItem(0)).setupParty(party);
+
                     mPresenter = ((QueuePage) pagerAdapter.getItem(1)).getPresenter();
                     try {
-                        partySocket = newPartySocket(new URI(data.getStringExtra("socket_url")));
+                        partySocket = newPartySocket(new URI(buns.getString("socket_url")));
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
                     }
@@ -221,6 +241,10 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         pagerAdapter.addFragments(createFragment(1));
         pagerAdapter.addFragments(createFragment(2));
 
+//        pagerAdapter.instantiateItem((ViewGroup)findViewById(R.id.partyPagelayout), 0);
+//        pagerAdapter.instantiateItem((ViewGroup)findViewById(R.id.queuePageLayout), 0);
+//        pagerAdapter.instantiateItem((ViewGroup)findViewById(R.id.searchPageLayout), 0);
+
         viewPager.setAdapter(pagerAdapter);
     }
 
@@ -237,6 +261,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             case 2:
                 fragment = new SearchPage();
                 break;
+            case 3:
+                fragment = new PartyDetailsPage();
         }
         fragment.setArguments(passFragmentArguments(R.color.textColorDefault));
         return fragment;
