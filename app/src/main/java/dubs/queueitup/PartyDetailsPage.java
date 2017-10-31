@@ -40,7 +40,7 @@ public class PartyDetailsPage extends Fragment {
     }
 
     public void setupParty(Party party){
-        
+
         pname.setText(party.getName());
         jcode.setText(party.getCode());
     }

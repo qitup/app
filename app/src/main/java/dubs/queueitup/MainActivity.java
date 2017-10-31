@@ -163,8 +163,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     Bundle buns = data.getExtras();
                     Party party = (Party) buns.getParcelable("party_details");
 
-                    ViewGroup vg = (ViewGroup) findViewById(R.id.viewpager);
-                    pagerAdapter.instantiateItem(vg, 0);
                     pagerAdapter.swapFragmentAt(createFragment(3), 0);
                     viewPager.getAdapter().notifyDataSetChanged();
 //                    viewPager.setCurrentItem(2);
@@ -235,6 +233,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private void setupViewPager() {
         viewPager = (NoSwiperPager) findViewById(R.id.viewpager);
         viewPager.setPagingEnabled(true);
+        viewPager.setOffscreenPageLimit(2);
         pagerAdapter = new BottomBarAdapter(getSupportFragmentManager());
 
         pagerAdapter.addFragments(createFragment(0));
