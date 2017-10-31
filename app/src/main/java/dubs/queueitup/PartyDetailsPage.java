@@ -23,7 +23,7 @@ public class PartyDetailsPage extends Fragment {
     TextView jcode;
     Party party_details;
 
-    public PartyDetailsPage () {
+    public PartyDetailsPage() {
         // Required empty public constructor
     }
 
@@ -36,18 +36,30 @@ public class PartyDetailsPage extends Fragment {
         pname = (TextView) view.findViewById(R.id.party_name);
         jcode = (TextView) view.findViewById(R.id.join_code);
 
+        if (savedInstanceState != null && party_details == null) {
+            party_details = (Party) savedInstanceState.getParcelable("party");
+        }
+
+        if (party_details != null) {
+            pname.setText(party_details.getName());
+            jcode.setText(party_details.getCode());
+        }
+
         return view;
-    }
-
-    public void setupParty(Party party){
-
-        pname.setText(party.getName());
-        jcode.setText(party.getCode());
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (getArguments() != null) {
+            party_details = (Party) getArguments().getParcelable("party");
+        }
     }
 
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelable("party", party_details);
+    }
 }
