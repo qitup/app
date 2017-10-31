@@ -192,23 +192,27 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         return new PartySocket(getAuthToken(), uri, new Draft_6455(), params, 3000) {
             @Override
             public void onMessage(String message) {
-                JSONObject response = null;
-                JSONObject track = null;
+                JSONObject response;
 
                 try {
                     response = new JSONObject(message);
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    return;
                 }
+
                 try {
                     switch (response.getString("type")) {
                         case "queue.push":
+                            JSONObject track;
+                            String uri;
                             try {
-                                track = response.getJSONObject("added").getJSONObject("item");
+                                track = response.getJSONObject("item");
+                                uri = track.getString("uri");
                             } catch (JSONException e) {
                                 e.printStackTrace();
+                                return;
                             }
-                            String uri = track.getString("uri");
 
                             String[] parts = uri.split(":");
                             final String id = parts[parts.length - 1];
