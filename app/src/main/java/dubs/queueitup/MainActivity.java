@@ -14,7 +14,6 @@ import android.support.v7.app.AppCompatDelegate;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Toast;
 
@@ -23,7 +22,6 @@ import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
-import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
@@ -59,8 +57,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private static final int REQUEST_CODE_CREATE = 1338;
     private static final int REQUEST_CODE_JOIN = 1339;
 
-
-    private Player mPlayer;
+    private SpotifyPlayer mPlayer;
     private SpotifyApi api;
     private PartySocket partySocket = null;
     private QueueAdapter mAdapter = null;
@@ -91,6 +88,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         setupBottomNavStyle();
 
         addBottomNavigationItems();
+
+        Log.d("MainActivity", getCallingPackage());
+        Log.d("MainActivity", getApplicationContext().getPackageName());
 
         Intent intent = new Intent(this, LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -140,12 +140,20 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
 
+                    Bundle bundle = data.getExtras();
+                    Party party = (Party) bundle.getParcelable("party_details");
+
+                    Bundle args = new Bundle();
+                    args.putParcelable("party", party);
+
+                    try {
+                        pagerAdapter.swapFragmentAt(createFragment(3, args), 0);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    viewPager.getAdapter().notifyDataSetChanged();
+
                     mPresenter = ((QueuePage) pagerAdapter.getItem(1)).getPresenter();
-//                    pagerAdapter.swapFragmentAt(createFragment(3), 0);
-//                    viewPager.getAdapter().notifyDataSetChanged();
-//                    Party party = (Party) data.getParcelableExtra("party");
-//
-//                    ((PartyDetailsPage) pagerAdapter.getItem(0)).setupParty(party);
 
                     try {
                         partySocket = newPartySocket(new URI(data.getStringExtra("socket_url")));
@@ -162,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     Bundle bundle = data.getExtras();
                     Party party = (Party) bundle.getParcelable("party_details");
 
-                    Bundle args = createFragmentBundle();
+                    Bundle args = new Bundle();
                     args.putParcelable("party", party);
 
                     try {
@@ -282,7 +290,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     @NonNull
     private Bundle createFragmentBundle() {
         Bundle bundle = new Bundle();
-        bundle.putInt("color", R.color.textColorDefault);
         return bundle;
     }
 
@@ -340,7 +347,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public void initPlayer() {
-        Config playerConfig = new Config(this, RequestSingleton.getSpotify_auth_token(), CLIENT_ID);
+        Config playerConfig = new Config(this, RequestSingleton.getSpotify_auth_token(), CLIENT_ID, Config.DeviceType.SMARTPHONE);
         Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
             @Override
             public void onInitialized(SpotifyPlayer spotifyPlayer) {
@@ -357,6 +364,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public void playTrack(Track item) {
+        Spotify.getReferenceCount();
         mPlayer.playUri(null, item.uri, 0, 0);
     }
 
@@ -450,6 +458,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
     @Override
     protected void onDestroy() {
+        Spotify.destroyPlayer(this);
         super.onDestroy();
     }
 

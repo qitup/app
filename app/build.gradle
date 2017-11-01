@@ -28,7 +28,7 @@ android {
         }
         debug {
             applicationIdSuffix ".debug"
-            buildConfigField "String", "HOST", '"api.qitup.ca"'
+            buildConfigField "String", "HOST", '"' + getIP() + ':8081"'
             buildConfigField "String", "clientID", '"SPOTIFY_ID"'
             buildConfigField "String", "scheme", '"http"'
         }
