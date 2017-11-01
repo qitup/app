@@ -29,20 +29,6 @@ public class SearchPresenter implements Search.ActionListener {
     private SearchPager mSearchPager;
     private SearchPager.CompleteListener mSearchListener;
 
-    private Player mPlayer;
-
-    private ServiceConnection mServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mPlayer = ((PlayerService.PlayerBinder) service).getService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mPlayer = null;
-        }
-    };
-
     public SearchPresenter(Context context, Search.View view) {
         mContext = context;
         mView = view;
@@ -59,8 +45,6 @@ public class SearchPresenter implements Search.ActionListener {
         }
 
         mSearchPager = new SearchPager(spotifyApi.getService());
-
-        mContext.bindService(PlayerService.getIntent(mContext), mServiceConnection, Activity.BIND_AUTO_CREATE);
     }
 
 
@@ -88,7 +72,7 @@ public class SearchPresenter implements Search.ActionListener {
 
     @Override
     public void destroy() {
-        mContext.unbindService(mServiceConnection);
+
     }
 
     @Override
@@ -99,12 +83,11 @@ public class SearchPresenter implements Search.ActionListener {
 
     @Override
     public void resume() {
-        mContext.stopService(PlayerService.getIntent(mContext));
+
     }
 
     @Override
-    public void pause() {
-        mContext.startService(PlayerService.getIntent(mContext));
+    public void pause(){
     }
 
     @Override
@@ -120,19 +103,6 @@ public class SearchPresenter implements Search.ActionListener {
         if (previewUrl == null) {
             logMessage("Track doesn't have a preview");
             return;
-        }
-
-        if (mPlayer == null) return;
-
-        String currentTrackUrl;
-        currentTrackUrl = mPlayer.getCurrentTrack();
-
-        if (currentTrackUrl == null || !currentTrackUrl.equals(previewUrl)) {
-            mPlayer.play(previewUrl);
-        } else if (mPlayer.isPlaying()) {
-            mPlayer.pause();
-        } else {
-            mPlayer.resume();
         }
     }
 

@@ -29,7 +29,7 @@ public class QueuePage extends Fragment implements Search.View {
     }
 
     public interface OnQueueItemSelected {
-        void playTrack(Track item);
+        void onSelected(Track item);
     }
 
 
@@ -56,7 +56,7 @@ public class QueuePage extends Fragment implements Search.View {
             @Override
             public void onItemVoted(View itemView, Track item) {
                 Log.d("QueuePage", "Vote submitted");
-                sListener.playTrack(item);
+                sListener.onSelected(item);
             }
         });
 
