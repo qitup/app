@@ -36,10 +36,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import dubs.queueitup.Models.Party;
+import dubs.queueitup.Models.*;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
@@ -192,24 +193,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
 
-                    mPresenter = ((QueuePage) pagerAdapter.getItem(1)).getPresenter();
-//                    pagerAdapter.swapFragmentAt(createFragment(3), 0);
-//                    viewPager.getAdapter().notifyDataSetChanged();
-//                    Party party = (Party) data.getParcelableExtra("party");
-//
-//                    ((PartyDetailsPage) pagerAdapter.getItem(0)).setupParty(party);
-
-                    try {
-                        partySocket = newPartySocket(new URI(data.getStringExtra("socket_url")));
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();
-                    }
-                    partySocket.connect();
-                }
-            } else if (requestCode == REQUEST_CODE_JOIN) {
-                if (resultCode == RESULT_OK) {
-                    Toast.makeText(this, "Successfully joined party", Toast.LENGTH_SHORT).show();
-
                     Bundle buns = data.getExtras();
                     Party party = (Party) buns.getParcelable("party_details");
 
@@ -224,6 +207,41 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     viewPager.getAdapter().notifyDataSetChanged();
 
                     mPresenter = ((QueuePage) pagerAdapter.getItem(1)).getPresenter();
+                    try {
+                        partySocket = newPartySocket(new URI(data.getStringExtra("socket_url")));
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
+                    }
+                    partySocket.connect();
+                }
+            } else if (requestCode == REQUEST_CODE_JOIN) {
+                if (resultCode == RESULT_OK) {
+                    Toast.makeText(this, "Successfully joined party", Toast.LENGTH_SHORT).show();
+                    mPresenter = ((QueuePage) pagerAdapter.getItem(1)).getPresenter();
+
+                    Bundle buns = data.getExtras();
+                    Party party = buns.getParcelable("party_details");
+                    Queue queue = buns.getParcelable("queue");
+
+                    Bundle args = createFragmentBundle();
+                    args.putParcelable("party", party);
+
+                    List<QItem> items = queue.getQueue_items();
+
+                    for (int i = 0; i < items.size(); i++) {
+                        String uri = items.get(i).getUri();
+                        String[] parts = uri.split(":");
+                        final String id = parts[parts.length - 1];
+                        mPresenter.addQueueItem(id);
+                    }
+
+                    try {
+                        pagerAdapter.swapFragmentAt(createFragment(3, args), 0);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    viewPager.getAdapter().notifyDataSetChanged();
+
                     try {
                         partySocket = newPartySocket(new URI(buns.getString("socket_url")));
                     } catch (URISyntaxException e) {

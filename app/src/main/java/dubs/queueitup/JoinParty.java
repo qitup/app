@@ -2,6 +2,9 @@ package dubs.queueitup;
 
 import android.content.Intent;
 import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -15,13 +18,21 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import dubs.queueitup.Models.Party;
+import dubs.queueitup.Models.QItem;
+import dubs.queueitup.Models.Queue;
 
 
 public class JoinParty extends AppCompatActivity {
@@ -60,7 +71,16 @@ public class JoinParty extends AppCompatActivity {
 //                            String host = response.getJSONObject("party").getString("host_id");
 //                            JSONObject guests = response.getJSONObject("party").getJSONObject("attendees");
                             intent.putExtra("party_details", new Party(name, join_code, "host"));
-
+                            JSONObject result = response.getJSONObject("queue");
+                            JSONArray items = result.getJSONArray("items");
+                            List<QItem> array = new ArrayList<QItem>();
+                            for (int i = 0; i < items.length(); i++){
+                                JSONObject item = items.getJSONObject(i);
+                                QItem q_item = new QItem(item.get("type").toString(), item.get("added_by").toString(), item.get("added_at").toString(), item.get("uri").toString());
+                                array.add(i, q_item);
+                            }
+                            Queue queue = new Queue(array);
+                            intent.putExtra("queue", queue);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
