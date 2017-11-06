@@ -8,13 +8,12 @@ import android.content.Context;
 
 public class PartySingleton {
     private static PartySingleton mInstance;
-    private static PartySocket partySocket;
+    private PartySocket partySocket = null;
     private static Context mCtx;
 
 
     private PartySingleton(Context context) {
         mCtx = context;
-
     }
 
     public static synchronized PartySingleton getInstance(Context context) {
@@ -22,5 +21,16 @@ public class PartySingleton {
             mInstance = new PartySingleton(context);
         }
         return mInstance;
+    }
+
+    public synchronized void setSocket(PartySocket party){
+        if(party.getConnection() == null){
+            return;
+        }
+        partySocket = party;
+    }
+
+    public synchronized PartySocket getSocket(){
+        return partySocket;
     }
 }

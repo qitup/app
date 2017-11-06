@@ -28,8 +28,8 @@ android {
         }
         debug {
             applicationIdSuffix ".debug"
-//            buildConfigField "String", "HOST", '"' + getIP() + ':8081"'
-            buildConfigField "String", "HOST", '"api.qitup.ca"'
+            buildConfigField "String", "HOST", '"' + getIP() + ':8081"'
+//            buildConfigField "String", "HOST", '"api.qitup.ca"'
             buildConfigField "String", "clientID", '"SPOTIFY_ID"'
             buildConfigField "String", "scheme", '"http"'
         }
@@ -50,6 +50,8 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     // This library handles authentication and authorization
     compile 'com.spotify.sdk:spotify-android-auth-1.0.0@aar'
+    //gson
+    compile 'com.google.code.gson:gson:2.8.2'
     //Http Library
     // This library handles music playback
     compile 'com.spotify.sdk:spotify-player-24-noconnect-2.20b@aar'

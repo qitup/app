@@ -8,6 +8,8 @@ import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Error;
 import com.spotify.sdk.android.player.Player;
 
+import org.json.JSONObject;
+
 import dubs.queueitup.Emitter;
 
 class ConnectionEventsHandler extends Emitter
@@ -19,7 +21,7 @@ class ConnectionEventsHandler extends Emitter
 
     @Override
     public void onConnectionMessage(String message) {
-        this.emit("connectionmessage", message);
+        this.emit("connectionmessage", message, new JSONObject());
     }
 
     @Override

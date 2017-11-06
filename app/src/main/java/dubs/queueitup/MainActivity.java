@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
 
     private SpotifyPlayer mPlayer;
-    private GlobalState state;
     private SpotifyApi api;
     private PartySocket partySocket = null;
     private QueueAdapter mAdapter = null;
@@ -119,11 +118,10 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
         addBottomNavigationItems();
 
-        playerEventsHandler.setCallback(getApplicationContext());
-        state = (GlobalState) getApplicationContext();
-
         Intent intent = new Intent(this, LoginActivity.class);
         startActivityForResult(intent, REQUEST_CODE);
+
+        playerEventsHandler.setCallback(this);
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -154,6 +152,13 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     @Override
+    protected void onPause(){
+        super.onPause();
+
+        unregisterReceiver(mNetworkStateReceiver);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
@@ -177,6 +182,14 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             mPlayer.addConnectionStateCallback(this.connectionEventsHandler);
             mPlayer.addNotificationCallback(this.playerEventsHandler);
         }
+    }
+
+    public void testEmitter(){
+        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyMetadataChanged);
+        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyTrackChanged);
+        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyPlay);
+        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyPause);
+        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyLostPermission);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -216,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         e.printStackTrace();
                     }
                     partySocket.connect();
-                    state.setSocket(partySocket);
+                    PartySingleton.getInstance(this).setSocket(partySocket);
                 }
             } else if (requestCode == REQUEST_CODE_JOIN) {
                 if (resultCode == RESULT_OK) {
@@ -252,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         e.printStackTrace();
                     }
                     partySocket.connect();
-                    state.setSocket(partySocket);
+                    PartySingleton.getInstance(this).setSocket(partySocket);
                 }
             }
         }
@@ -469,8 +482,10 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             @Override
             public void onInitialized(SpotifyPlayer spotifyPlayer) {
                 mPlayer = spotifyPlayer;
+                PlayerSingleton.getInstance(getApplicationContext()).setPlayer(spotifyPlayer);
                 mPlayer.setConnectivityStatus(mOperationCallback, getNetworkConnectivity(MainActivity.this));
                 MainActivity.this.loginAndPlay(accessToken, trackUri, fromPosition);
+//                testEmitter();
             }
 
             @Override
@@ -532,6 +547,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         trackUri,
                         fromPosition
                 );
+//                testEmitter();
             }
 
             @Override

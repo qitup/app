@@ -13,7 +13,7 @@ import org.json.JSONObject;
 
 public abstract class Emitter {
     private static final String TAG = "Emitter";
-        private Context ctx = null;
+    protected Context ctx = null;
 
     public Emitter() {
     }
@@ -23,15 +23,19 @@ public abstract class Emitter {
     }
 
     protected void emit(final String eventName) {
-        this.emit(eventName, new JSONArray());
+        this.emit(eventName, new JSONObject());
     }
 
     protected void emit(final String eventName, final Object data) {
         String str = (data != null) ? data.toString() : "";
-        this.emit(eventName, new JSONArray().put(str));
+        try {
+            this.emit(eventName, "", new JSONObject().put("str",str));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
-    protected void emit(final String eventName, final JSONArray data) {
+    protected void emit(final String eventName, final String eventType, final JSONObject data) {
         if (eventName == null || eventName.length() < 1) {
             throw new IllegalArgumentException("eventName is null or empty!");
         }
@@ -47,13 +51,16 @@ public abstract class Emitter {
         }
 
         try {
+            final JSONObject event = new JSONObject();
             final JSONObject arg = new JSONObject()
-                    .put("type", eventName)
-                    .put("args", data);
+                    .put("type", eventType)
+                    .put("name", eventName)
+                    .put("metadata", data);
 
-            final GlobalState gs = (GlobalState) ctx.getApplicationContext();
-            PartySocket socket = gs.getSocket();
-            socket.send(arg.toString());
+            event.put("type", "player.event");
+            event.put("event", arg);
+            Log.d("Emitter", event.toString());
+            PartySingleton.getInstance(ctx).getSocket().send(event.toString());
         } catch (JSONException ex) {
             Log.e(
                     TAG,
