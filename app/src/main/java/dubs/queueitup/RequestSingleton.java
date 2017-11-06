@@ -3,8 +3,6 @@ package dubs.queueitup;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -18,7 +16,6 @@ public class RequestSingleton {
     private static Context mCtx;
     private static String jwt_token;
     private static String spotify_auth_token;
-    private QueuePresenter mPresenter;
 
     private RequestSingleton(Context context) {
         mCtx = context;
@@ -65,13 +62,6 @@ public class RequestSingleton {
         jwt_token = Token;
     }
 
-    public QueuePresenter getmPresenter(){
-        return mPresenter;
-    }
-
-    public void setmPresenter(QueuePresenter queue){
-        mPresenter = queue;
-    }
 
     public static synchronized String getJWT_token() {
         return jwt_token;
