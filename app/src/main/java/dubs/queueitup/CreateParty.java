@@ -19,6 +19,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import dubs.queueitup.Models.Party;
+
 public class CreateParty extends AppCompatActivity {
 
     private String baseURL = BuildConfig.scheme + "://" + getHost();
@@ -56,8 +58,15 @@ public class CreateParty extends AppCompatActivity {
                         Log.d("CreateParty", "Response is: " + response.toString());
                         Intent intent = new Intent();
                         intent.putExtra("result_code", 1338);
+
                         try {
+                            String name = response.getJSONObject("party").getString("name");
+                            String join_code = response.getJSONObject("party").getString("join_code");
+//                            String host = response.getJSONObject("party").getString("host_id");
+//                            JSONObject guests = response.getJSONObject("party").getJSONObject("attendees");
+                            intent.putExtra("party_details", new Party(name, join_code, "host"));
                             intent.putExtra("socket_url", response.get("url").toString());
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

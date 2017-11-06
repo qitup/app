@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
 
     private SpotifyPlayer mPlayer;
+    private GlobalState state;
     private SpotifyApi api;
     private PartySocket partySocket = null;
     private QueueAdapter mAdapter = null;
@@ -117,6 +118,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         setupBottomNavStyle();
 
         addBottomNavigationItems();
+
+        playerEventsHandler.setCallback(getApplicationContext());
+        state = (GlobalState) getApplicationContext();
 
         Intent intent = new Intent(this, LoginActivity.class);
         startActivityForResult(intent, REQUEST_CODE);
@@ -212,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         e.printStackTrace();
                     }
                     partySocket.connect();
+                    state.setSocket(partySocket);
                 }
             } else if (requestCode == REQUEST_CODE_JOIN) {
                 if (resultCode == RESULT_OK) {
@@ -247,6 +252,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         e.printStackTrace();
                     }
                     partySocket.connect();
+                    state.setSocket(partySocket);
                 }
             }
         }
