@@ -20,6 +20,10 @@ class PlayerEventsHandler extends Emitter
     private static final String TAG = "PlayerEventsHandler";
 //    private static Context ctx;
 
+    public PlayerEventsHandler(String msgType){
+        super(msgType);
+    }
+
     @Override
     public void onPlaybackEvent(PlayerEvent playerEvent) {
         // Strip off enum prefix for platform consistency
@@ -43,7 +47,7 @@ class PlayerEventsHandler extends Emitter
             case kSpPlaybackNotifyPlay:
             case kSpPlaybackNotifyLostPermission:
             case kSpPlaybackNotifyNext:
-                this.emit(eventName, "player.spotify", metaData);
+                this.emit(eventName, "spotify.playback", metaData);
                 break;
             default:
                 // Strip off kSpPlaybackNotify

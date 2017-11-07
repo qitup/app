@@ -14,8 +14,10 @@ import org.json.JSONObject;
 public abstract class Emitter {
     private static final String TAG = "Emitter";
     protected Context ctx = null;
+    private String msgType;
 
-    public Emitter() {
+    public Emitter(String msgType) {
+        this.msgType = msgType;
     }
 
     public void setCallback(final Context ctx) {
@@ -57,7 +59,7 @@ public abstract class Emitter {
                     .put("name", eventName)
                     .put("metadata", data);
 
-            event.put("type", "player.event");
+            event.put("type", this.msgType);
             event.put("event", arg);
             Log.d("Emitter", event.toString());
             PartySingleton.getInstance(ctx).getSocket().send(event.toString());

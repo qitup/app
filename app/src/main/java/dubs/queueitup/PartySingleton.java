@@ -1,6 +1,7 @@
 package dubs.queueitup;
 
 import android.content.Context;
+import android.util.Log;
 
 /**
  * Created by ryanschott on 2017-11-06.
@@ -24,13 +25,10 @@ public class PartySingleton {
     }
 
     public synchronized void setSocket(PartySocket party){
-        if(party.getConnection() == null){
-            return;
-        }
-        partySocket = party;
+        this.partySocket = party;
     }
 
     public synchronized PartySocket getSocket(){
-        return partySocket;
+        return this.partySocket;
     }
 }

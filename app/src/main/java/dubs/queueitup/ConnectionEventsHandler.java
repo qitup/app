@@ -19,6 +19,10 @@ class ConnectionEventsHandler extends Emitter
     private Player.OperationCallback loginCallback = null;
     private Runnable logoutCallback = null;
 
+    public ConnectionEventsHandler(String msgType){
+        super(msgType);
+    }
+
     @Override
     public void onConnectionMessage(String message) {
         this.emit("connectionmessage", message, new JSONObject());

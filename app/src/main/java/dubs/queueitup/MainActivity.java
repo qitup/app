@@ -1,6 +1,9 @@
 package dubs.queueitup;
 
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -15,16 +18,19 @@ import android.support.v7.app.AppCompatDelegate;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.webkit.WebView;
 import android.widget.Toast;
 
-import com.android.volley.RequestQueue;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
-import com.spotify.sdk.android.player.*;
-
+import com.spotify.sdk.android.player.Config;
+import com.spotify.sdk.android.player.ConnectionStateCallback;
+import com.spotify.sdk.android.player.Connectivity;
 import com.spotify.sdk.android.player.Error;
+import com.spotify.sdk.android.player.Player;
+import com.spotify.sdk.android.player.PlayerEvent;
+import com.spotify.sdk.android.player.Spotify;
+import com.spotify.sdk.android.player.SpotifyPlayer;
+
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
@@ -40,9 +46,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import dubs.queueitup.Models.*;
+import dubs.queueitup.Models.Party;
+import dubs.queueitup.Models.QItem;
+import dubs.queueitup.Models.Queue;
 import kaaes.spotify.webapi.android.SpotifyApi;
-import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
 
 public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener, SearchPage.OnTrackItemSelected, SpotifyPlayer.NotificationCallback, ConnectionStateCallback, QueuePage.OnQueueItemSelected {
@@ -56,27 +63,16 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private static final int REQUEST_CODE = 1337;
     private static final int REQUEST_CODE_CREATE = 1338;
     private static final int REQUEST_CODE_JOIN = 1339;
-
-
     private SpotifyPlayer mPlayer;
-    private SpotifyApi api;
     private PartySocket partySocket = null;
-    private QueueAdapter mAdapter = null;
     private QueuePresenter mPresenter = null;
-    NoSwiperPager simpleViewPager;
-    private WebView mWebview;
     private String auth_token;
     private Intent intent;
-    private String baseURL = BuildConfig.scheme + "://" + getHost();
-    private RequestQueue requestQueue;
-    private SharedPreferences sharedPref;
-    java.net.CookieManager systemCookies;
-    private boolean notificationVisible = false;
     private String currentAccessToken = null;
     private String currentClientId = null;
 
-    private ConnectionEventsHandler connectionEventsHandler = new ConnectionEventsHandler();
-    private PlayerEventsHandler playerEventsHandler = new PlayerEventsHandler();
+    private ConnectionEventsHandler connectionEventsHandler = new ConnectionEventsHandler("player.connection");
+    private PlayerEventsHandler playerEventsHandler = new PlayerEventsHandler("player.event");
 
     /**
      * Used to get notifications from the system about the current network state in order
@@ -122,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         startActivityForResult(intent, REQUEST_CODE);
 
         playerEventsHandler.setCallback(this);
+        connectionEventsHandler.setCallback(this);
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -275,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Map<String, String> params = new HashMap<String, String>();
         params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
 
-        return new PartySocket(getAuthToken(), uri, new Draft_6455(), params, 3000) {
+        return new PartySocket(uri, new Draft_6455(), params, 3000) {
             @Override
             public void onMessage(String message) {
                 JSONObject response;
@@ -422,7 +419,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         }
 
         partySocket.send(message.toString());
-        Log.d("MainActivity", track.uri.toString());
+        Log.d("MainActivity", track.uri);
     }
 
     private void play(final String clientId,
@@ -806,17 +803,8 @@ class JWTUtils {
 
 class PartySocket extends WebSocketClient {
 
-    SpotifyApi spotifyApi;
-
-
-    private SpotifyService mSpotifyApi = null;
-
-    public PartySocket(String accessToken, URI serverUri, Draft draft, Map<String, String> httpHeaders, int connectTimeout) {
+    public PartySocket(URI serverUri, Draft draft, Map<String, String> httpHeaders, int connectTimeout) {
         super(serverUri, draft, httpHeaders, connectTimeout);
-
-        spotifyApi = new SpotifyApi();
-        spotifyApi.setAccessToken(accessToken);
-        mSpotifyApi = spotifyApi.getService();
     }
 
     public PartySocket(URI serverURI) {
