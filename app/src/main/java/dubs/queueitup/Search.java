@@ -16,6 +16,10 @@ public class Search {
         void reset();
 
         void addData(List<Track> items);
+
+        void addPlaying(List<Track> items);
+
+        void removeItem(int position);
     }
 
     public interface ActionListener {

@@ -15,11 +15,17 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
+import android.telecom.Call;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
 import com.spotify.sdk.android.player.Config;
@@ -35,12 +41,14 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +60,7 @@ import dubs.queueitup.Models.Queue;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.models.Track;
 
-public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener, SearchPage.OnTrackItemSelected, SpotifyPlayer.NotificationCallback, ConnectionStateCallback, QueuePage.OnQueueItemSelected {
+public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener, SearchPage.OnTrackItemSelected, SpotifyPlayer.NotificationCallback, ConnectionStateCallback, QueuePage.OnQueueItemSelected, QueuePage.OnMediaPlayerAction {
     private static final String TAG = "MainActivity";
     private NoSwiperPager viewPager;
     private AHBottomNavigation bottomNavigation;
@@ -60,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private static final String HOST_EMULATOR = "10.0.2.2:8081";
     private static final String CLIENT_ID = BuildConfig.clientID;
     private static final String REDIRECT_URI = "queueitup-login://callback";
+    private static String baseURL = BuildConfig.scheme + "://" + getHost();
     private static final int REQUEST_CODE = 1337;
     private static final int REQUEST_CODE_CREATE = 1338;
     private static final int REQUEST_CODE_JOIN = 1339;
@@ -195,9 +204,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         if (data != null) {
             if (requestCode == REQUEST_CODE) {
                 if (resultCode == RESULT_OK) {
-                    RequestSingleton.setJWT_token(data.getStringExtra("auth_token"));
-                    currentAccessToken = getAuthToken();
-                    RequestSingleton.setSpotify_auth_token(currentAccessToken);
+                    RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
                     //                SharedPreferences.Editor editor = sharedPref.edit();
                     //                editor.putString("auth_token", data.getStringExtra("auth_token"));
                     //                editor.apply();
@@ -320,6 +327,10 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         return (Build.PRODUCT).contains("sdk") ? HOST_EMULATOR : BuildConfig.HOST;
     }
 
+    public static String getBaseURL(){
+        return baseURL;
+    }
+
     private void setupViewPager() {
         viewPager = (NoSwiperPager) findViewById(R.id.viewpager);
         viewPager.setPagingEnabled(true);
@@ -420,6 +431,68 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
         partySocket.send(message.toString());
         Log.d("MainActivity", track.uri);
+    }
+
+    private void pause(){
+        final SpotifyPlayer player = this.mPlayer;
+        if (player == null) {
+            Log.wtf(TAG, "SpotifyPlayer instance was null in pause.");
+
+            JSONObject descr = this.makeError(
+                    "unknown",
+                    "Received null as SpotifyPlayer in pause method."
+            );
+            return;
+        }
+
+        player.pause(new Player.OperationCallback() {
+            @Override
+            public void onSuccess() {
+//                callbackContext.success();
+            }
+
+            @Override
+            public void onError(Error error) {
+                Log.e(TAG, "Pause failure: " + error.toString());
+
+                JSONObject descr = MainActivity.this.makeError(
+                        "pause_failed",
+                        error.toString()
+                );
+//                callbackContext.error(descr);
+            }
+        });
+    }
+
+    private void resume(){
+        final SpotifyPlayer player = this.mPlayer;
+        if (player == null) {
+            Log.wtf(TAG, "SpotifyPlayer instance was null in resume.");
+
+            JSONObject descr = this.makeError(
+                    "unknown",
+                    "Received null as SpotifyPlayer in resume method."
+            );
+            return;
+        }
+
+        player.resume(new Player.OperationCallback() {
+            @Override
+            public void onSuccess() {
+//                callbackContext.success();
+            }
+
+            @Override
+            public void onError(Error error) {
+                Log.e(TAG, "Resume failure: " + error.toString());
+
+                JSONObject descr = MainActivity.this.makeError(
+                        "resume_failed",
+                        error.toString()
+                );
+//                callbackContext.error(descr);
+            }
+        });
     }
 
     private void play(final String clientId,
@@ -693,32 +766,64 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
 
-    public String getAuthToken() {
-        String jwt_token = null;
+    public void requestClientToken() {
+//        String jwt_token = null;
+//
+//
+//        try {
+//            jwt_token = JWTUtils.decoded(RequestSingleton.getJWT_token());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        JSONObject auth = new JSONObject();
+//
+//        try {
+//            auth = new JSONObject(jwt_token);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//
+//
+//        try {
+//            auth_token = auth.getString("access_token");
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//            return "";
+//        }
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/spotify/token", null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("AuthToken", "Response is: " + response.toString());
+                        try {
+                             RequestSingleton.setClient_token(response.get("access_token").toString());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        if (error.networkResponse.statusCode == 400) {
+                            Toast.makeText(getApplicationContext(), "Could not get client token", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Error", "That didn't work!" + error.toString());
+                        }
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
 
+                return params;
+            }
+        };
 
-        try {
-            jwt_token = JWTUtils.decoded(RequestSingleton.getJWT_token());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        JSONObject auth = new JSONObject();
-
-        try {
-            auth = new JSONObject(jwt_token);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-
-        try {
-            auth_token = auth.getString("access_token");
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return "";
-        }
-        return auth_token;
+        RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
 
     @Override
@@ -775,8 +880,79 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     @Override
-    public void onSelected(Track item) {
-        play(CLIENT_ID, currentAccessToken, item.uri, 0);
+    public void onSelected(Track item, int position) {
+//        play(CLIENT_ID, currentAccessToken, item.uri, 0);
+        mPresenter.removeQueueItem(position);
+
+        String uri = item.uri;
+        String[] parts = uri.split(":");
+        final String id = parts[parts.length - 1];
+
+        mPresenter.addPlaying(id);
+
+        makePlayerRequest("play", item);
+    }
+
+    @Override
+    public void onMediaAction(View v) {
+        switch (v.getId()){
+            case R.id.play_button:
+                makePlayerRequest("resume", null);
+                break;
+            case R.id.pause_button:
+                makePlayerRequest("pause", null);
+                break;
+        }
+    }
+
+    public void makePlayerRequest(String action, Track item){
+
+        JSONObject item_info = new JSONObject();
+
+        if(action.equals("play")){
+            try {
+                item_info.put("uri", item.uri);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+//
+//        try {
+//            item_info.put("device_id", Build.DEVICE);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/player/"+action, item_info,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("Main", "Response is: " + response.toString());
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        if (error.networkResponse.statusCode == 400) {
+                            Toast.makeText(getApplicationContext(), "Party not found", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Error", "That didn't work!" + error.toString());
+                        }
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+
+                return params;
+            }
+        };
+
+
+        RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
 }
 

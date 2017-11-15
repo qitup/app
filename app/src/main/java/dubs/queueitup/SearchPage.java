@@ -76,7 +76,7 @@ public class SearchPage extends Fragment implements Search.View{
 //        text.addTextChangedListener(this);
 //
         mActionListener = new SearchPresenter(getActivity(), this);
-        mActionListener.init(RequestSingleton.getSpotify_auth_token());
+        mActionListener.init(RequestSingleton.getClient_token());
 
         // Setup search field
         final SearchView searchView = v.findViewById(R.id.search_view);
@@ -120,24 +120,6 @@ public class SearchPage extends Fragment implements Search.View{
         return v;
     }
 
-
-//    @Override
-//    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//
-//    }
-
-//    @Override
-//    public void onTextChanged(CharSequence s, int start, int before, int count) {
-//        if (sListener != null) {
-//            sListener.searchSpotify(s.toString());
-//        }
-//    }
-
-//    @Override
-//    public void afterTextChanged(Editable s) {
-//
-//    }
-
     @Override
     public void reset() {
         mScrollListener.reset();
@@ -147,6 +129,16 @@ public class SearchPage extends Fragment implements Search.View{
     @Override
     public void addData(List<Track> items) {
         mAdapter.addData(items);
+    }
+
+    @Override
+    public void addPlaying(List<Track> items) {
+
+    }
+
+    @Override
+    public void removeItem(int position) {
+
     }
 
     @Override

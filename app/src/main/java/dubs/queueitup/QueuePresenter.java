@@ -61,6 +61,17 @@ public class QueuePresenter implements Search.ActionListener {
         task.execute(id);
     }
 
+    public void removeQueueItem(final int position){
+        mView.removeItem(position);
+    }
+
+    public void addPlaying(final String id){
+        mSpotifyApi = spotifyApi.getService();
+
+        LoadPTrackTask task = new LoadPTrackTask();
+        task.execute(id);
+    }
+
 
     @Override
     public void search(@Nullable String searchQuery) {
@@ -142,6 +153,21 @@ public class QueuePresenter implements Search.ActionListener {
 
             tracksToAdd.add(result);
             mView.addData(tracksToAdd);
+        }
+    }
+
+    private class LoadPTrackTask extends AsyncTask<String, Integer, Track> {
+        @Override
+        protected Track doInBackground(String... strings) {
+            return mSpotifyApi.getTrack(strings[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Track result) {
+            List<Track> tracksToAdd = new ArrayList<>();
+
+            tracksToAdd.add(result);
+            mView.addPlaying(tracksToAdd);
         }
     }
 }

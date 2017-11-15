@@ -45,12 +45,12 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
         @Override
         public void onClick(View v) {
             notifyItemChanged(getLayoutPosition());
-            mListener.onItemVoted(v, mItems.get(getAdapterPosition()));
+            mListener.onItemVoted(v, mItems.get(getAdapterPosition()), getAdapterPosition());
         }
     }
 
     public interface ItemVotedListener {
-        void onItemVoted(View itemView, Track item);
+        void onItemVoted(View itemView, Track item, int position);
     }
 
     public QueueAdapter(Context context, ItemVotedListener listener) {
@@ -63,6 +63,17 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
     }
 
     public void addData(List<Track> items) {
+        mItems.addAll(items);
+        notifyDataSetChanged();
+    }
+
+    public void removeItem(int position){
+        mItems.remove(position);
+        notifyDataSetChanged();
+    }
+
+    public void addPlaying(List<Track> items) {
+        mItems.clear();
         mItems.addAll(items);
         notifyDataSetChanged();
     }
