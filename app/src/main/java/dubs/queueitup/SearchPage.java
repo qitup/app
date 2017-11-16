@@ -76,7 +76,7 @@ public class SearchPage extends Fragment implements Search.View{
 //        text.addTextChangedListener(this);
 //
         mActionListener = new SearchPresenter(getActivity(), this);
-        mActionListener.init(RequestSingleton.getClient_token());
+        mActionListener.init(RequestSingleton.getSpotify_auth_token());
 
         // Setup search field
         final SearchView searchView = v.findViewById(R.id.search_view);

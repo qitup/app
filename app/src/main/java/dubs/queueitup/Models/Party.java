@@ -13,6 +13,7 @@ public class Party implements Parcelable{
     private String name;
     private String code;
     private String host;
+    private String id;
 //    private List<String> attendees;
 
 
@@ -20,12 +21,14 @@ public class Party implements Parcelable{
         name = in.readString();
         code = in.readString();
         host = in.readString();
+        id = in.readString();
 //        attendees = in.createStringArrayList();
     }
 
-    public Party(String pname, String jcode, String host_name){
+    public Party(String pname, String jcode, String host_name, String id){
         name = pname;
         code = jcode;
+        this.id = id;
         host = host_name;
 //        attendees = attendees_list;
     }
@@ -59,11 +62,16 @@ public class Party implements Parcelable{
         return host;
     }
 
+    public String getID(){
+        return id;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(name);
         dest.writeString(code);
         dest.writeString(host);
+        dest.writeString(id);
 //        dest.writeStringList(attendees);
     }
 }

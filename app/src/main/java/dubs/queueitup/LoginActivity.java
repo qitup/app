@@ -139,6 +139,7 @@ public class LoginActivity extends AppCompatActivity {
                         Intent intent = new Intent();
                         try {
                             intent.putExtra("jwt_token", response.getString("token"));
+                            intent.putExtra("access_token", response.getString("access_token"));
                             intent.putExtra("result_code", 1337);
                         } catch (JSONException e) {
                             e.printStackTrace();

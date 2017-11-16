@@ -62,9 +62,10 @@ public class CreateParty extends AppCompatActivity {
                         try {
                             String name = response.getJSONObject("party").getString("name");
                             String join_code = response.getJSONObject("party").getString("join_code");
+                            String id = response.getJSONObject("party").getString("id");
 //                            String host = response.getJSONObject("party").getString("host_id");
 //                            JSONObject guests = response.getJSONObject("party").getJSONObject("attendees");
-                            intent.putExtra("party_details", new Party(name, join_code, "host"));
+                            intent.putExtra("party_details", new Party(name, join_code, "host", id));
                             intent.putExtra("socket_url", response.get("url").toString());
 
                         } catch (JSONException e) {

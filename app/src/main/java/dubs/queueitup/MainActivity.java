@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private Intent intent;
     private String currentAccessToken = null;
     private String currentClientId = null;
+    private Party currentParty = null;
 
     private ConnectionEventsHandler connectionEventsHandler = new ConnectionEventsHandler("player.connection");
     private PlayerEventsHandler playerEventsHandler = new PlayerEventsHandler("player.event");
@@ -205,6 +206,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             if (requestCode == REQUEST_CODE) {
                 if (resultCode == RESULT_OK) {
                     RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
+                    RequestSingleton.setSpotify_auth_token(data.getStringExtra("access_token"));
                     //                SharedPreferences.Editor editor = sharedPref.edit();
                     //                editor.putString("auth_token", data.getStringExtra("auth_token"));
                     //                editor.apply();
@@ -241,11 +243,11 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     mPresenter = ((QueuePage) pagerAdapter.getItem(1)).getPresenter();
 
                     Bundle buns = data.getExtras();
-                    Party party = buns.getParcelable("party_details");
+                    currentParty = buns.getParcelable("party_details");
                     Queue queue = buns.getParcelable("queue");
 
                     Bundle args = createFragmentBundle();
-                    args.putParcelable("party", party);
+                    args.putParcelable("party", currentParty);
 
                     List<QItem> items = queue.getQueue_items();
 
@@ -766,66 +768,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
 
-    public void requestClientToken() {
-//        String jwt_token = null;
-//
-//
-//        try {
-//            jwt_token = JWTUtils.decoded(RequestSingleton.getJWT_token());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        JSONObject auth = new JSONObject();
-//
-//        try {
-//            auth = new JSONObject(jwt_token);
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//
-//
-//        try {
-//            auth_token = auth.getString("access_token");
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//            return "";
-//        }
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/spotify/token", null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        // Display the first 500 characters of the response string.
-                        Log.d("AuthToken", "Response is: " + response.toString());
-                        try {
-                             RequestSingleton.setClient_token(response.get("access_token").toString());
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        if (error.networkResponse.statusCode == 400) {
-                            Toast.makeText(getApplicationContext(), "Could not get client token", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Log.e("Error", "That didn't work!" + error.toString());
-                        }
-                    }
-                }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
-
-                return params;
-            }
-        };
-
-        RequestSingleton.getInstance(this).addToRequestQueue(request);
-    }
-
     @Override
     protected void onDestroy() {
         Spotify.destroyPlayer(this);
@@ -890,41 +832,25 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
         mPresenter.addPlaying(id);
 
-        makePlayerRequest("play", item);
+//        makePlayerRequest("play", item);
     }
 
     @Override
     public void onMediaAction(View v) {
         switch (v.getId()){
             case R.id.play_button:
-                makePlayerRequest("resume", null);
+                makePlayerRequest("play");
                 break;
             case R.id.pause_button:
-                makePlayerRequest("pause", null);
+                makePlayerRequest("pause");
                 break;
         }
     }
 
-    public void makePlayerRequest(String action, Track item){
-
-        JSONObject item_info = new JSONObject();
-
-        if(action.equals("play")){
-            try {
-                item_info.put("uri", item.uri);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-//
-//        try {
-//            item_info.put("device_id", Build.DEVICE);
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
+    public void makePlayerRequest(String action){
 
 
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/player/"+action, item_info,
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/player/"+action+"?id="+currentParty.getID(), null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -935,6 +861,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        Log.wtf("Error", error.toString());
                         if (error.networkResponse.statusCode == 400) {
                             Toast.makeText(getApplicationContext(), "Party not found", Toast.LENGTH_SHORT).show();
                         } else {
