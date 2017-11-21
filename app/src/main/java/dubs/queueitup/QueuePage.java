@@ -4,6 +4,7 @@ package dubs.queueitup;
  * Created by ryanschott on 2017-09-28.
  */
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,8 +28,7 @@ public class QueuePage extends Fragment implements Search.View {
     private QueuePresenter mPresenter;
     OnQueueItemSelected sListener;
     OnMediaPlayerAction cListener;
-    ImageButton playButton;
-    ImageButton pauseButton;
+    ImageButton mediaButton;
 
     public QueuePage() {
 // Required empty public constructor
@@ -64,19 +64,16 @@ public class QueuePage extends Fragment implements Search.View {
         resultsList.setLayoutManager(mLayoutManager);
         playingNow.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        playButton = v.findViewById(R.id.play_button);
-        pauseButton = v.findViewById(R.id.pause_button);
+        mediaButton = v.findViewById(R.id.media_button);
 
-        playButton.setOnClickListener(new View.OnClickListener() {
+        mediaButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cListener.onMediaAction(v);
-            }
-        });
-        pauseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cListener.onMediaAction(v);
+                Drawable icon = mediaButton.getDrawable();
+//                if(icon == R.drawable.play_button){
+//
+//                }
+                cListener.onMediaAction(mediaButton);
             }
         });
 
@@ -124,6 +121,10 @@ public class QueuePage extends Fragment implements Search.View {
     @Override
     public void removeItem(int position){
         mAdapter.removeItem(position);
+    }
+
+    public Track getItem(int position){
+        return mAdapter.getItem(position);
     }
 
     @Override

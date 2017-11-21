@@ -72,6 +72,10 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
         notifyDataSetChanged();
     }
 
+    public Track getItem(int position){
+        return mItems.get(position);
+    }
+
     public void addPlaying(List<Track> items) {
         mItems.clear();
         mItems.addAll(items);

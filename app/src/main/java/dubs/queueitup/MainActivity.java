@@ -835,20 +835,37 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 //        makePlayerRequest("play", item);
     }
 
+    public void setNowPlaying(int position) {
+        Track item = mPresenter.removeQueueItem(position);
+
+        String uri = item.uri;
+        String[] parts = uri.split(":");
+        final String id = parts[parts.length - 1];
+
+        mPresenter.addPlaying(id);
+    }
+
     @Override
     public void onMediaAction(View v) {
-        switch (v.getId()){
-            case R.id.play_button:
-                makePlayerRequest("play");
-                break;
-            case R.id.pause_button:
+        if(PlayerSingleton.getInstance(this).isEmpty()){
+            makePlayerRequest("play");
+            v.setBackgroundResource(R.drawable.pause);
+            PlayerSingleton.getInstance(this).setPlaying(1);
+        } else {
+            if(PlayerSingleton.getInstance(this).isPlaying() == 1){
                 makePlayerRequest("pause");
-                break;
+                v.setBackgroundResource(R.drawable.play_button);
+                PlayerSingleton.getInstance(this).setPlaying(0);
+            } else {
+                makePlayerRequest("play");
+                v.setBackgroundResource(R.drawable.pause);
+                PlayerSingleton.getInstance(this).setPlaying(1);
+            }
         }
+
     }
 
     public void makePlayerRequest(String action){
-
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/player/"+action+"?id="+currentParty.getID(), null,
                 new Response.Listener<JSONObject>() {
@@ -856,6 +873,12 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
                         Log.d("Main", "Response is: " + response.toString());
+                        setNowPlaying(0);
+                        try {
+                            String name = response.getJSONObject("player").getString("name");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 },
                 new Response.ErrorListener() {

@@ -34,4 +34,7 @@
     <string name="cover_art_description">Cover Art</string>
     <string name="search_hint">Search</string>
     <string name="join_code">Join Code</string>
+    <string name="next_up">Next up</string>
+    <string name="now_playing">Now Playing</string>
+    <string name="play">Play</string>
 </resources>

@@ -28,7 +28,7 @@ public class QueuePresenter implements Search.ActionListener {
     private static final String CLIENT_ID = "SPOTIFY_ID";
 
     private final Context mContext;
-    private final Search.View mView;
+    private final QueuePage mView;
     private String mCurrentQuery;
     private SpotifyApi spotifyApi;
     private SpotifyService mSpotifyApi = null;
@@ -38,7 +38,7 @@ public class QueuePresenter implements Search.ActionListener {
 
     private SpotifyPlayer mPlayer;
 
-    public QueuePresenter(Context context, Search.View view) {
+    public QueuePresenter(Context context, QueuePage view) {
         mContext = context;
         mView = view;
     }
@@ -61,8 +61,11 @@ public class QueuePresenter implements Search.ActionListener {
         task.execute(id);
     }
 
-    public void removeQueueItem(final int position){
+    public Track removeQueueItem(final int position){
+        Track item = mView.getItem(position);
         mView.removeItem(position);
+        return item;
+
     }
 
     public void addPlaying(final String id){

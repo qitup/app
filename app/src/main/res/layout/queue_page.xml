@@ -49,7 +49,7 @@
             android:layout_marginBottom="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="Now Playing"
+            android:text="@string/now_playing"
             android:textColor="@color/textColorDefault"
             android:textSize="18sp" />
 
@@ -71,7 +71,7 @@
             android:layout_marginBottom="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="Next up"
+            android:text="@string/next_up"
             android:textColor="@color/textColorDefault"
             android:textSize="18sp" />
 
@@ -88,7 +88,7 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="100"
@@ -96,36 +96,22 @@
         android:orientation="horizontal">
 
         <ImageButton
-            android:id="@+id/imageButton4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|center_horizontal"
-            android:layout_weight="1"
-            app:srcCompat="@android:drawable/ic_media_previous" />
+            android:id="@+id/media_button"
+            android:layout_width="80dp"
+            android:layout_height="88dp"
+            android:layout_marginBottom="60dp"
+            android:layout_marginLeft="0dp"
+            android:background="@drawable/media_button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:layout_constraintLeft_creator="1"
+            app:layout_constraintVertical_bias="0.266"
+            android:layout_marginRight="0dp"
+            app:layout_constraintRight_toRightOf="parent"
+            android:contentDescription="@string/play" />
 
-        <ImageButton
-            android:id="@+id/pause_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|center_horizontal"
-            app:srcCompat="@android:drawable/ic_media_pause" />
-
-        <ImageButton
-            android:id="@+id/play_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|center_horizontal"
-            app:srcCompat="@android:drawable/ic_media_play" />
-
-        <ImageButton
-            android:id="@+id/imageButton5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|center_horizontal"
-            android:layout_weight="1"
-            app:srcCompat="@android:drawable/ic_media_next" />
-
-    </LinearLayout>
+    </android.support.constraint.ConstraintLayout>
 
 
 </LinearLayout>
