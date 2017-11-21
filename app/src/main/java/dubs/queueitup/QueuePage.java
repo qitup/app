@@ -69,10 +69,11 @@ public class QueuePage extends Fragment implements Search.View {
         mediaButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Drawable icon = mediaButton.getDrawable();
-//                if(icon == R.drawable.play_button){
-//
-//                }
+                if(PlayerSingleton.getInstance(getActivity()).isPlaying() == 1){
+                    mediaButton.setImageResource(R.drawable.play_button);
+                } else {
+                    mediaButton.setImageResource(R.drawable.pause);
+                }
                 cListener.onMediaAction(mediaButton);
             }
         });

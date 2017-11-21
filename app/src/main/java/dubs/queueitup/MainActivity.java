@@ -849,16 +849,16 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     public void onMediaAction(View v) {
         if(PlayerSingleton.getInstance(this).isEmpty()){
             makePlayerRequest("play");
-            v.setBackgroundResource(R.drawable.pause);
+//            v.setBackgroundResource(R.drawable.pause);
             PlayerSingleton.getInstance(this).setPlaying(1);
+            setNowPlaying(0);
         } else {
             if(PlayerSingleton.getInstance(this).isPlaying() == 1){
                 makePlayerRequest("pause");
-                v.setBackgroundResource(R.drawable.play_button);
+//                v.setBackgroundResource(R.drawable.play_button);
                 PlayerSingleton.getInstance(this).setPlaying(0);
             } else {
                 makePlayerRequest("play");
-                v.setBackgroundResource(R.drawable.pause);
                 PlayerSingleton.getInstance(this).setPlaying(1);
             }
         }
@@ -873,7 +873,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
                         Log.d("Main", "Response is: " + response.toString());
-                        setNowPlaying(0);
+
                         try {
                             String name = response.getJSONObject("player").getString("name");
                         } catch (JSONException e) {

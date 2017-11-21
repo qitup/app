@@ -99,17 +99,18 @@
             android:id="@+id/media_button"
             android:layout_width="80dp"
             android:layout_height="88dp"
-            android:layout_marginBottom="60dp"
+            android:layout_marginBottom="70dp"
             android:layout_marginLeft="0dp"
-            android:background="@drawable/media_button"
+            android:layout_marginRight="0dp"
+            android:background="@drawable/item_background"
+            android:contentDescription="@string/play"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:layout_constraintLeft_creator="1"
-            app:layout_constraintVertical_bias="0.266"
-            android:layout_marginRight="0dp"
             app:layout_constraintRight_toRightOf="parent"
-            android:contentDescription="@string/play" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.266"
+            app:srcCompat="@drawable/play_button"
+            tools:layout_constraintLeft_creator="1" />
 
     </android.support.constraint.ConstraintLayout>
 
