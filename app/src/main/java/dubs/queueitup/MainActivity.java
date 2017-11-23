@@ -13,12 +13,16 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.telecom.Call;
 import android.util.Base64;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -28,6 +32,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
+import com.google.gson.Gson;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Connectivity;
@@ -57,6 +62,7 @@ import java.util.Objects;
 import dubs.queueitup.Models.Party;
 import dubs.queueitup.Models.QItem;
 import dubs.queueitup.Models.Queue;
+import dubs.queueitup.Models.User;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.models.Track;
 
@@ -296,37 +302,18 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
                 try {
                     switch (response.getString("type")) {
-                        case "queue.push":
-                            JSONObject track;
-                            String uri;
-                            try {
-                                track = response.getJSONObject("item");
-                                uri = track.getString("uri");
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                                return;
-                            }
-
-                            String[] parts = uri.split(":");
-                            final String id = parts[parts.length - 1];
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mPresenter.addQueueItem(id);
-                                    Toast.makeText(getApplicationContext(), "Added song to queue", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                            break;
                         case "queue.change":
+                            JSONObject queue;
                             final JSONArray tracks;
 
                             try {
-                                tracks = response.getJSONArray("items");
+                                queue = response.getJSONObject("queue");
                             } catch (JSONException e) {
                                 e.printStackTrace();
                                 return;
                             }
+                            tracks = queue.getJSONArray("items");
+
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -335,6 +322,15 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                 }
                             });
                             break;
+                        case "attendees.change":
+                            JSONObject res;
+
+                            try {
+                                res = response.getJSONObject("attendees");
+                            } catch (JSONException e){
+                                e.printStackTrace();
+                                return;
+                            }
 
                     }
                 } catch (JSONException e) {
@@ -350,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         List<QItem> items = queue.getQueue_items();
         for (int i = 0; i < tracks.length(); i++){
             try {
-                if(i <= items.size()){
+                if(i < items.size()){
                     if(items.get(i).getUri() != tracks.getJSONObject(i).get("uri")){
                         items.remove(i);
                         mPresenter.removeQueueItem(i);
@@ -942,43 +938,77 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
     @Override
     public void leaveParty(View v) {
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/leave/?id="+currentParty.getID(), null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        // Display the first 500 characters of the response string.
-                        Log.d("Main", "Response is: " + response.toString());
 
-                        try {
-                            pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        viewPager.getAdapter().notifyDataSetChanged();
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.wtf("Error", error.toString());
-                        if (error.networkResponse.statusCode == 400) {
-                            Toast.makeText(getApplicationContext(), "Party not found", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Log.e("Error", "That didn't work!" + error.toString());
-                        }
-                    }
-                }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+        String token = RequestSingleton.getJWT_token();
+        JSONObject claim = null;
+        String user_id = null;
+        try {
+            claim = new JSONObject(JWTUtils.decoded(token));
+            user_id = claim.getString("sub");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-                return params;
+        List<User> users = currentParty.getAttendees();
+
+
+
+        if(!user_id.equals(currentParty.getHost().getId()) || users.size() == 0) {
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/leave/?id=" + currentParty.getID(), null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            // Display the first 500 characters of the response string.
+                            Log.d("Main", "Response is: " + response.toString());
+
+                            try {
+                                pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            viewPager.getAdapter().notifyDataSetChanged();
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.wtf("Error", error.toString());
+                            if (error.networkResponse.statusCode == 400) {
+                                Toast.makeText(getApplicationContext(), "Party not found", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.e("Error", "That didn't work!" + error.toString());
+                            }
+                        }
+                    }) {
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+
+                    return params;
+                }
+            };
+
+
+            RequestSingleton.getInstance(this).addToRequestQueue(request);
+        } else {
+            List<String> names = new ArrayList<>();
+
+            for (int i=0; i < users.size(); i++){
+                User user = users.get(i);
+                names.add(i, user.getName());
             }
-        };
 
-
-        RequestSingleton.getInstance(this).addToRequestQueue(request);
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
+            LayoutInflater inflater = getLayoutInflater();
+            View convertView = (View) inflater.inflate(R.layout.list, null);
+            alertDialog.setView(convertView);
+            alertDialog.setTitle("List");
+            ListView lv = (ListView) convertView.findViewById(R.id.lv);
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,names);
+            lv.setAdapter(adapter);
+            alertDialog.show();
+        }
     }
 }
 

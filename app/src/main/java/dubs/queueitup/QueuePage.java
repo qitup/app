@@ -73,7 +73,6 @@ public class QueuePage extends Fragment implements Search.View {
             }
         });
 
-
         mAdapter = new QueueAdapter(getActivity(), new QueueAdapter.ItemVotedListener(){
             @Override
             public void onItemVoted(View itemView, Track item, int position) {
@@ -106,6 +105,10 @@ public class QueuePage extends Fragment implements Search.View {
     @Override
     public void addPlaying(List<Track> items) {
         npAdapter.addPlaying(items);
+    }
+
+    public void enableMediaButton(boolean enabled){
+        mediaButton.setClickable(enabled);
     }
 
     @Override

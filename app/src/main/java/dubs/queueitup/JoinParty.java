@@ -71,13 +71,14 @@ public class JoinParty extends AppCompatActivity {
                             String name = response.getJSONObject("party").getString("name");
                             String join_code = response.getJSONObject("party").getString("join_code");
                             String party_id = response.getJSONObject("party").getString("id");
-//                            String host = response.getJSONObject("party").getString("host_id");
+                            JSONObject host = response.getJSONObject("party").getJSONObject("host");
+                            User host_user = new User(host.getString("id"), host.getString("name"), host.get("avatar_url").toString());
                             JSONArray guests = response.getJSONObject("party").getJSONArray("attendees");
 
                             List<User> users = new ArrayList<User>();
                             for (int i = 0; i < guests.length(); i++){
                                 JSONObject guest = guests.getJSONObject(i);
-                                User user = new User(guest.get("name").toString(), guest.get("avatar_url").toString());
+                                User user = new User(guest.getString("id"), guest.get("name").toString(), guest.get("avatar_url").toString());
                                 users.add(i, user);
                             }
 
@@ -90,7 +91,7 @@ public class JoinParty extends AppCompatActivity {
                                 array.add(i, q_item);
                             }
                             Queue queue = new Queue(array);
-                            intent.putExtra("party_details", new Party(name, join_code, "host", party_id, users, queue));
+                            intent.putExtra("party_details", new Party(name, join_code, host_user, party_id, users, queue));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

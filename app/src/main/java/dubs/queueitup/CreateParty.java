@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import dubs.queueitup.Models.Party;
+import dubs.queueitup.Models.User;
 
 public class CreateParty extends AppCompatActivity {
 
@@ -63,9 +64,9 @@ public class CreateParty extends AppCompatActivity {
                             String name = response.getJSONObject("party").getString("name");
                             String join_code = response.getJSONObject("party").getString("join_code");
                             String id = response.getJSONObject("party").getString("id");
-//                            String host = response.getJSONObject("party").getString("host_id");
-//                            JSONObject guests = response.getJSONObject("party").getJSONObject("attendees");
-                            intent.putExtra("party_details", new Party(name, join_code, "host", id, null, null));
+                          JSONObject host = response.getJSONObject("party").getJSONObject("host");
+                            User host_user = new User(host.getString("id"), host.getString("name"), host.get("avatar_url").toString());
+                            intent.putExtra("party_details", new Party(name, join_code, host_user, id, null, null));
                             intent.putExtra("socket_url", response.get("url").toString());
 
                         } catch (JSONException e) {

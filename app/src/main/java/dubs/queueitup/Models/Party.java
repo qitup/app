@@ -13,7 +13,7 @@ import java.util.List;
 public class Party implements Parcelable{
     private String name;
     private String code;
-    private String host;
+    private User host;
     private String id;
     private List<User> attendees;
     private Queue queue;
@@ -22,18 +22,18 @@ public class Party implements Parcelable{
     protected Party(Parcel in) {
         name = in.readString();
         code = in.readString();
-        host = in.readString();
+        host = in.readParcelable(User.class.getClassLoader());
         id = in.readString();
         attendees = new ArrayList<>();
         in.readTypedList(attendees, User.CREATOR);
         queue = in.readParcelable(Queue.class.getClassLoader());
     }
 
-    public Party(String pname, String jcode, String host_name, String id, List<User> attendees, Queue queue){
+    public Party(String pname, String jcode, User host, String id, List<User> attendees, Queue queue){
         name = pname;
         code = jcode;
         this.id = id;
-        host = host_name;
+        this.host = host;
         this.attendees = attendees;
         this.queue = queue;
     }
@@ -63,7 +63,7 @@ public class Party implements Parcelable{
         return code;
     }
 
-    public String getHost(){
+    public User getHost(){
         return host;
     }
 
@@ -91,7 +91,7 @@ public class Party implements Parcelable{
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(name);
         dest.writeString(code);
-        dest.writeString(host);
+        dest.writeParcelable(host, 0);
         dest.writeString(id);
         dest.writeTypedList(attendees);
         dest.writeParcelable(queue, 0);
