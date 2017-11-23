@@ -77,7 +77,7 @@ public class JoinParty extends AppCompatActivity {
 
                             List<User> users = new ArrayList<User>();
                             for (int i = 0; i < guests.length(); i++){
-                                JSONObject guest = guests.getJSONObject(i);
+                                JSONObject guest = guests.getJSONObject(i).getJSONObject("user");
                                 User user = new User(guest.getString("id"), guest.get("name").toString(), guest.get("avatar_url").toString());
                                 users.add(i, user);
                             }

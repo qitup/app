@@ -954,7 +954,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
 
         if(!user_id.equals(currentParty.getHost().getId()) || users.size() == 0) {
-            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/leave/?id=" + currentParty.getID(), null,
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/leave/?id=" + currentParty.getID()+"?tranfer_to", null,
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
