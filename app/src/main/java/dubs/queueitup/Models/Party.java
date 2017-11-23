@@ -3,6 +3,7 @@ package dubs.queueitup.Models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,7 +15,8 @@ public class Party implements Parcelable{
     private String code;
     private String host;
     private String id;
-//    private List<String> attendees;
+    private List<User> attendees;
+    private Queue queue;
 
 
     protected Party(Parcel in) {
@@ -22,15 +24,18 @@ public class Party implements Parcelable{
         code = in.readString();
         host = in.readString();
         id = in.readString();
-//        attendees = in.createStringArrayList();
+        attendees = new ArrayList<>();
+        in.readTypedList(attendees, User.CREATOR);
+        queue = in.readParcelable(Queue.class.getClassLoader());
     }
 
-    public Party(String pname, String jcode, String host_name, String id){
+    public Party(String pname, String jcode, String host_name, String id, List<User> attendees, Queue queue){
         name = pname;
         code = jcode;
         this.id = id;
         host = host_name;
-//        attendees = attendees_list;
+        this.attendees = attendees;
+        this.queue = queue;
     }
 
     public static final Creator<Party> CREATOR = new Creator<Party>() {
@@ -66,12 +71,29 @@ public class Party implements Parcelable{
         return id;
     }
 
+    public void setQueue(Queue queue){
+        this.queue = queue;
+    }
+
+    public Queue getQueue(){
+        return this.queue;
+    }
+
+    public int numAttendees(){
+        return attendees.size();
+    }
+
+    public List<User> getAttendees(){
+        return attendees;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(name);
         dest.writeString(code);
         dest.writeString(host);
         dest.writeString(id);
-//        dest.writeStringList(attendees);
+        dest.writeTypedList(attendees);
+        dest.writeParcelable(queue, 0);
     }
 }

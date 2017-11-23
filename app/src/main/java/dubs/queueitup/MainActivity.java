@@ -60,7 +60,7 @@ import dubs.queueitup.Models.Queue;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.models.Track;
 
-public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener, SearchPage.OnTrackItemSelected, SpotifyPlayer.NotificationCallback, ConnectionStateCallback, QueuePage.OnQueueItemSelected, QueuePage.OnMediaPlayerAction {
+public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener, SearchPage.OnTrackItemSelected, SpotifyPlayer.NotificationCallback, ConnectionStateCallback, QueuePage.OnMediaPlayerAction, PartyDetailsPage.leaveParty {
     private static final String TAG = "MainActivity";
     private NoSwiperPager viewPager;
     private AHBottomNavigation bottomNavigation;
@@ -207,9 +207,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 if (resultCode == RESULT_OK) {
                     RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
                     RequestSingleton.setSpotify_auth_token(data.getStringExtra("access_token"));
-                    //                SharedPreferences.Editor editor = sharedPref.edit();
-                    //                editor.putString("auth_token", data.getStringExtra("auth_token"));
-                    //                editor.apply();
                 }
             } else if (requestCode == REQUEST_CODE_CREATE) {
                 if (resultCode == RESULT_OK) {
@@ -244,19 +241,11 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
                     Bundle buns = data.getExtras();
                     currentParty = buns.getParcelable("party_details");
-                    Queue queue = buns.getParcelable("queue");
 
                     Bundle args = createFragmentBundle();
                     args.putParcelable("party", currentParty);
 
-                    List<QItem> items = queue.getQueue_items();
-
-                    for (int i = 0; i < items.size(); i++) {
-                        String uri = items.get(i).getUri();
-                        String[] parts = uri.split(":");
-                        final String id = parts[parts.length - 1];
-                        mPresenter.addQueueItem(id);
-                    }
+                    refreshQueue();
 
                     try {
                         pagerAdapter.swapFragmentAt(createFragment(3, args), 0);
@@ -274,6 +263,18 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     PartySingleton.getInstance(this).setSocket(partySocket);
                 }
             }
+        }
+    }
+
+    public void refreshQueue(){
+        Queue queue = currentParty.getQueue();
+        List<QItem> items = queue.getQueue_items();
+
+        for (int i = 0; i < items.size(); i++) {
+            String uri = items.get(i).getUri();
+            String[] parts = uri.split(":");
+            final String id = parts[parts.length - 1];
+            mPresenter.addQueueItem(id);
         }
     }
 
@@ -316,6 +317,24 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                     Toast.makeText(getApplicationContext(), "Added song to queue", Toast.LENGTH_SHORT).show();
                                 }
                             });
+                            break;
+                        case "queue.change":
+                            final JSONArray tracks;
+
+                            try {
+                                tracks = response.getJSONArray("items");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                return;
+                            }
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateQueue(tracks);
+                                    Toast.makeText(getApplicationContext(), "Queue Updated", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            break;
 
                     }
                 } catch (JSONException e) {
@@ -323,6 +342,38 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 }
             }
         };
+    }
+
+    public void updateQueue(JSONArray tracks){
+        Queue queue = currentParty.getQueue();
+
+        List<QItem> items = queue.getQueue_items();
+        for (int i = 0; i < tracks.length(); i++){
+            try {
+                if(i <= items.size()){
+                    if(items.get(i).getUri() != tracks.getJSONObject(i).get("uri")){
+                        items.remove(i);
+                        mPresenter.removeQueueItem(i);
+                        i--;
+                    }
+                } else {
+                    items.add(i,
+                        new QItem(
+                            tracks.getJSONObject(i).get("type").toString(),
+                            tracks.getJSONObject(i).get("added_by").toString(),
+                            tracks.getJSONObject(i).get("added_at").toString(),
+                            tracks.getJSONObject(i).get("uri").toString())
+                    );
+                    String uri = items.get(i).getUri();
+                    String[] parts = uri.split(":");
+                    final String id = parts[parts.length - 1];
+                    mPresenter.addQueueItem(id);
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static String getHost() {
@@ -408,6 +459,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         JSONObject message = new JSONObject();
         JSONObject queue_item = new JSONObject();
 
+        String type = "spotify_track";
+        String uri = track.uri;
+
         try {
             message.put("type", "queue.push");
         } catch (JSONException e) {
@@ -415,12 +469,12 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         }
 
         try {
-            queue_item.put("type", "spotify_track");
+            queue_item.put("type", type);
         } catch (JSONException e) {
             e.printStackTrace();
         }
         try {
-            queue_item.put("uri", track.uri.toString());
+            queue_item.put("uri", uri);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -432,7 +486,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         }
 
         partySocket.send(message.toString());
-        Log.d("MainActivity", track.uri);
+        Log.d("MainActivity", uri);
     }
 
     private void pause(){
@@ -821,20 +875,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Log.d("MainActivity", "Received connection message: " + message);
     }
 
-    @Override
-    public void onSelected(Track item, int position) {
-//        play(CLIENT_ID, currentAccessToken, item.uri, 0);
-        mPresenter.removeQueueItem(position);
-
-        String uri = item.uri;
-        String[] parts = uri.split(":");
-        final String id = parts[parts.length - 1];
-
-        mPresenter.addPlaying(id);
-
-//        makePlayerRequest("play", item);
-    }
-
     public void setNowPlaying(int position) {
         Track item = mPresenter.removeQueueItem(position);
 
@@ -874,11 +914,47 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         // Display the first 500 characters of the response string.
                         Log.d("Main", "Response is: " + response.toString());
 
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.wtf("Error", error.toString());
+                        if (error.networkResponse.statusCode == 400) {
+                            Toast.makeText(getApplicationContext(), "Party not found", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Error", "That didn't work!" + error.toString());
+                        }
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+
+                return params;
+            }
+        };
+
+
+        RequestSingleton.getInstance(this).addToRequestQueue(request);
+    }
+
+    @Override
+    public void leaveParty(View v) {
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/leave/?id="+currentParty.getID(), null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("Main", "Response is: " + response.toString());
+
                         try {
-                            String name = response.getJSONObject("player").getString("name");
-                        } catch (JSONException e) {
+                            pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
+                        viewPager.getAdapter().notifyDataSetChanged();
                     }
                 },
                 new Response.ErrorListener() {
@@ -905,6 +981,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
 }
+
 
 class JWTUtils {
 
@@ -945,7 +1022,6 @@ class PartySocket extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
-
     }
 
     @Override

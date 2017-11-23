@@ -1,5 +1,6 @@
 package dubs.queueitup;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -21,10 +22,17 @@ public class PartyDetailsPage extends Fragment {
     View view;
     TextView pname;
     TextView jcode;
+    Button leave_button;
     Party party_details;
+    leaveParty sListener;
 
     public PartyDetailsPage() {
         // Required empty public constructor
+    }
+
+
+    public interface leaveParty {
+        void leaveParty(View v);
     }
 
     @Override
@@ -45,6 +53,14 @@ public class PartyDetailsPage extends Fragment {
             jcode.setText(party_details.getCode());
         }
 
+        leave_button = view.findViewById(R.id.leave_party);
+        leave_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sListener.leaveParty(v);
+            }
+        });
+
         return view;
     }
 
@@ -61,5 +77,16 @@ public class PartyDetailsPage extends Fragment {
         super.onSaveInstanceState(outState);
 
         outState.putParcelable("party", party_details);
+    }
+
+    @Override
+    public void onAttach(Context context){
+        super.onAttach(context);
+        if (context instanceof leaveParty) {
+            sListener = (leaveParty) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement searchTextEntered");
+        }
     }
 }

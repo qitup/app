@@ -34,6 +34,7 @@ import java.util.Map;
 import dubs.queueitup.Models.Party;
 import dubs.queueitup.Models.QItem;
 import dubs.queueitup.Models.Queue;
+import dubs.queueitup.Models.User;
 
 
 public class JoinParty extends AppCompatActivity {
@@ -71,8 +72,15 @@ public class JoinParty extends AppCompatActivity {
                             String join_code = response.getJSONObject("party").getString("join_code");
                             String party_id = response.getJSONObject("party").getString("id");
 //                            String host = response.getJSONObject("party").getString("host_id");
-//                            JSONObject guests = response.getJSONObject("party").getJSONObject("attendees");
-                            intent.putExtra("party_details", new Party(name, join_code, "host", party_id));
+                            JSONArray guests = response.getJSONObject("party").getJSONArray("attendees");
+
+                            List<User> users = new ArrayList<User>();
+                            for (int i = 0; i < guests.length(); i++){
+                                JSONObject guest = guests.getJSONObject(i);
+                                User user = new User(guest.get("name").toString(), guest.get("avatar_url").toString());
+                                users.add(i, user);
+                            }
+
                             JSONObject result = response.getJSONObject("queue");
                             JSONArray items = result.getJSONArray("items");
                             List<QItem> array = new ArrayList<QItem>();
@@ -82,7 +90,7 @@ public class JoinParty extends AppCompatActivity {
                                 array.add(i, q_item);
                             }
                             Queue queue = new Queue(array);
-                            intent.putExtra("queue", queue);
+                            intent.putExtra("party_details", new Party(name, join_code, "host", party_id, users, queue));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

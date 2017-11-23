@@ -48,6 +48,18 @@ public class Queue implements Parcelable{
         return queue_items;
     }
 
+    public void removeItem(int position){
+        queue_items.remove(position);
+    }
+
+    public void addItem(QItem item){
+        queue_items.add(queue_items.size(), item);
+    }
+
+    public void addItemAt(QItem item, int position){
+        queue_items.add(position, item);
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeTypedList(queue_items);

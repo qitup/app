@@ -26,16 +26,11 @@ public class QueuePage extends Fragment implements Search.View {
     QueueAdapter mAdapter;
     QueueAdapter npAdapter;
     private QueuePresenter mPresenter;
-    OnQueueItemSelected sListener;
     OnMediaPlayerAction cListener;
     ImageButton mediaButton;
 
     public QueuePage() {
 // Required empty public constructor
-    }
-
-    public interface OnQueueItemSelected {
-        void onSelected(Track item, int position);
     }
 
     public interface OnMediaPlayerAction {
@@ -83,7 +78,6 @@ public class QueuePage extends Fragment implements Search.View {
             @Override
             public void onItemVoted(View itemView, Track item, int position) {
                 Log.d("QueuePage", "Vote submitted");
-                sListener.onSelected(item, position);
             }
         });
 
@@ -131,12 +125,7 @@ public class QueuePage extends Fragment implements Search.View {
     @Override
     public void onAttach(Context context){
         super.onAttach(context);
-        if (context instanceof OnQueueItemSelected) {
-            sListener = (OnQueueItemSelected) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement searchTextEntered");
-        }
+
         if (context instanceof OnMediaPlayerAction) {
             cListener = (OnMediaPlayerAction) context;
         } else {
