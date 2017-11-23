@@ -954,7 +954,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
 
         if(!user_id.equals(currentParty.getHost().getId()) || users.size() == 0) {
-            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/leave/?id=" + currentParty.getID()+"?tranfer_to", null,
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/leave/?id=" + currentParty.getID(), null,
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
@@ -974,7 +974,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         public void onErrorResponse(VolleyError error) {
                             Log.wtf("Error", error.toString());
                             if (error.networkResponse.statusCode == 400) {
-                                Toast.makeText(getApplicationContext(), "Party not found", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), "Host Error", Toast.LENGTH_SHORT).show();
                             } else {
                                 Log.e("Error", "That didn't work!" + error.toString());
                             }
