@@ -1,16 +1,18 @@
 package dubs.queueitup;
 
-import android.content.Intent;
-import android.graphics.Bitmap;
+import android.app.ProgressDialog;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.webkit.CookieManager;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebSettings;
+
+import android.content.Intent;
+import android.view.View;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -20,146 +22,141 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.CookieHandler;
-import java.net.CookiePolicy;
-import java.net.HttpCookie;
-import java.net.URI;
-import java.util.List;
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 public class LoginActivity extends AppCompatActivity {
-
-    java.net.CookieManager systemCookies;
-    private String baseURL = BuildConfig.scheme + "://" + getHost();
+    private static final String TAG = "LoginActivity";
+    private static final int REQUEST_SIGNUP = 0;
+    private static final int REQUEST_SPOTIFY = 1;
     private static final String HOST_EMULATOR = "10.0.2.2:8081";
-    private static final String CLIENT_ID = "SPOTIFY_ID";
-    private static final String REDIRECT_URI = "queueitup-login://callback";
+
+    @InjectView(R.id.input_email) EditText _emailText;
+    @InjectView(R.id.input_password) EditText _passwordText;
+    @InjectView(R.id.btn_login) Button _loginButton;
+    @InjectView(R.id.btn_spotify_login) Button _spotifyLoginButton;
+    @InjectView(R.id.link_signup) TextView _signupLink;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        CookieManager cookieManager = CookieManager.getInstance();
+        ButterKnife.inject(this);
 
-        final WebView mWebview = (WebView) findViewById(R.id.webView);
-
-        final WebSettings settings = mWebview.getSettings();
-        settings.setAppCacheEnabled(true);
-        settings.setBuiltInZoomControls(true);
-        settings.setJavaScriptEnabled(true);
-        settings.setAllowContentAccess(true);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            cookieManager.setAcceptThirdPartyCookies(mWebview, true);
-        } else {
-            cookieManager.setAcceptCookie(true);
-            cookieManager.setAcceptThirdPartyCookies(mWebview, true);
-        }
-
-//        final WebSettings settings = mWebview.getSettings();
-//        settings.setAppCacheEnabled(true);
-//        settings.setBuiltInZoomControls(true);
-
-        systemCookies = new java.net.CookieManager(null, CookiePolicy.ACCEPT_ALL);
-        CookieHandler.setDefault(systemCookies);
-
-
-        String url = baseURL + "/auth/spotify";
-
-        mWebview.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                String request_url = request.getUrl().toString();
-
-                if (request_url.startsWith(baseURL + "/auth/spotify/callback")) {
-                    String cookieHeader = CookieManager.getInstance().getCookie(request.getUrl().getHost());
-
-                    // If there are cookies then add them to the cookie store for future requests
-                    if (cookieHeader != null) {
-                        List<HttpCookie> cookies = HttpCookie.parse(cookieHeader);
-                        URI baseURI = URI.create(baseURL);
-                        for (HttpCookie cookie : cookies) {
-                            systemCookies.getCookieStore().add(baseURI, cookie);
-                        }
-                    }
-                    LoginActivity.this.finishAuthentication(request_url);
-                    return true;
-                } else {
-                    return false;
-                }
-            }
+        _spotifyLoginButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                super.onPageStarted(view, url, favicon);
-//                loadingFinished = false;
-                //SHOW LOADING IF IT ISNT ALREADY VISIBLE
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-//                if(!redirect){
-//                    loadingFinished = true;
-//                }
-//
-//                if(loadingFinished && !redirect){
-//                    //HIDE LOADING IT HAS FINISHED
-//                } else{
-//                    redirect = false;
-//                }
-                super.onPageFinished(view, url);
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), SpotifyLoginActivity.class);
+                startActivityForResult(intent, REQUEST_SPOTIFY);
             }
         });
-        mWebview.loadUrl(url);
 
-        super.onCreate(savedInstanceState);
+        _loginButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                login();
+            }
+        });
+
+        _signupLink.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // Start the Signup activity
+                Intent intent = new Intent(getApplicationContext(), SignupActivity.class);
+                startActivityForResult(intent, REQUEST_SIGNUP);
+            }
+        });
     }
 
-    private void finishAuthentication(String exchange_url) {
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, exchange_url, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        // Display the first 500 characters of the response string.
-                        Log.d("MainActivity", "Response is: " + response.toString());
+    public void login() {
+        Log.d(TAG, "Login");
 
-                        final WebView mWebview = (WebView) findViewById(R.id.webView);
+        if (!validate()) {
+            onLoginFailed();
+            return;
+        }
 
-                        mWebview.clearCache(true);
+        _loginButton.setEnabled(false);
 
-                        mWebview.onPause();
-                        mWebview.removeAllViews();
-                        mWebview.destroyDrawingCache();
+        final ProgressDialog progressDialog = new ProgressDialog(LoginActivity.this,
+                R.style.Theme_AppCompat_DayNight_Dialog);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage("Authenticating...");
+        progressDialog.show();
 
-                        // NOTE: This pauses JavaScript execution for ALL WebViews,
-                        // do not use if you have other WebViews still alive.
-                        // If you create another WebView after calling this,
-                        // make sure to call mWebView.resumeTimers().
-                        mWebview.pauseTimers();
+        String email = _emailText.getText().toString();
+        String password = _passwordText.getText().toString();
 
-                        mWebview.destroy();
-                        Intent intent = new Intent();
-                        try {
-                            intent.putExtra("jwt_token", response.getString("token"));
-                            intent.putExtra("access_token", response.getString("access_token"));
-                            intent.putExtra("result_code", 1337);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+        // TODO: Implement your own authentication logic here.
 
-                        setResult(RESULT_OK, intent);
-                        LoginActivity.this.finish();
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        // On complete call either onLoginSuccess or onLoginFailed
+                        onLoginSuccess();
+                        // onLoginFailed();
+                        progressDialog.dismiss();
                     }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("Error", "That didn't work!" + error.toString());
-                    }
-                });
-
-        RequestSingleton.getInstance(this).addToRequestQueue(request);
+                }, 3000);
     }
 
-    public static String getHost() {
-        return (Build.PRODUCT).contains("sdk") ? HOST_EMULATOR : BuildConfig.HOST;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_SIGNUP) {
+            if (resultCode == RESULT_OK) {
+
+                // TODO: Implement successful signup logic here
+                // By default we just finish the Activity and log them in automatically
+                this.finish();
+            }
+        } else if(requestCode == REQUEST_SPOTIFY){
+            RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
+            RequestSingleton.setSpotify_auth_token(data.getStringExtra("access_token"));
+            this.finish();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        // disable going back to the MainActivity
+        moveTaskToBack(true);
+    }
+
+    public void onLoginSuccess() {
+        _loginButton.setEnabled(true);
+        finish();
+    }
+
+    public void onLoginFailed() {
+        Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_LONG).show();
+
+        _loginButton.setEnabled(true);
+    }
+
+    public boolean validate() {
+        boolean valid = true;
+
+        String email = _emailText.getText().toString();
+        String password = _passwordText.getText().toString();
+
+        if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            _emailText.setError("enter a valid email address");
+            valid = false;
+        } else {
+            _emailText.setError(null);
+        }
+
+        if (password.isEmpty() || password.length() < 4 || password.length() > 10) {
+            _passwordText.setError("between 4 and 10 alphanumeric characters");
+            valid = false;
+        } else {
+            _passwordText.setError(null);
+        }
+
+        return valid;
     }
 }

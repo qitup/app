@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/QueueItUp.iml" filepath="$PROJECT_DIR$/QueueItUp.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://C:\Users\Ryan\Documents\QueueItUp\app\QueueItUp.iml" filepath="C:\Users\Ryan\Documents\QueueItUp\app\QueueItUp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app.iml" filepath="$PROJECT_DIR$/app.iml" />
+      <module fileurl="file://C:\Users\Ryan\Documents\QueueItUp\app\app\app.iml" filepath="C:\Users\Ryan\Documents\QueueItUp\app\app\app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app-app.iml" filepath="$PROJECT_DIR$/app/app-app.iml" />
     </modules>
   </component>
 </project>

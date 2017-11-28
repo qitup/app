@@ -78,7 +78,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private static final String CLIENT_ID = BuildConfig.clientID;
     private static final String REDIRECT_URI = "queueitup-login://callback";
     private static String baseURL = BuildConfig.scheme + "://" + getHost();
-    private static final int REQUEST_CODE = 1337;
+    private static final int REQUEST_CODE_LOGIN_CREATE = 1336;
+    private static final int REQUEST_CODE_LOGIN = 1337;
     private static final int REQUEST_CODE_CREATE = 1338;
     private static final int REQUEST_CODE_JOIN = 1339;
     private SpotifyPlayer mPlayer;
@@ -118,37 +119,44 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d("PACKAGE ID", getApplicationInfo().packageName);
-
         AppCompatDelegate.setDefaultNightMode(
                 AppCompatDelegate.MODE_NIGHT_AUTO);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         setupViewPager();
-
         bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
         setupBottomNavBehaviors();
         setupBottomNavStyle();
-
         addBottomNavigationItems();
 
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        String auth_string = settings.getString("auth_token", null);
-        if(auth_string != null){
-            try {
-                jwt_token =  new JSONObject(auth_string);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivityForResult(intent, REQUEST_CODE_LOGIN);
 
-
-            if(tokenExpired()){
-                refreshToken();
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putString("auth_token",jwt_token.toString());
-            }
-        }
+//        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+//        String auth_string = settings.getString("jwt_token", null);
+//        if(auth_string != null){
+//            try {
+//                jwt_token =  new JSONObject(auth_string);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//
+//            if(tokenExpired()){
+//                refreshToken();
+//                SharedPreferences.Editor editor = settings.edit();
+//                editor.putString("jwt_token",jwt_token.toString());
+//                editor.commit();
+//            }
+//            try {
+//                RequestSingleton.setJWT_token(jwt_token.getString("access_token"));
+//                RequestSingleton.setSpotify_auth_token(jwt_token.getString("access_token"));
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        } else {
+//            Intent intent = new Intent(this, LoginActivity.class);
+//            startActivityForResult(intent, REQUEST_CODE_LOGIN);
+//        }
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -179,14 +187,14 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public boolean tokenExpired(){
+        long expiry = 0;
         try {
-            long expiry = jwt_token.getInt("exp") * 1000;
+            expiry = jwt_token.getInt("exp") * 1000;
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-//        if(LocalDateTime.now() > )
-        return false;
+        return System.currentTimeMillis() > expiry;
     }
 
     public void refreshToken(){
@@ -235,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         super.onResume();
 
         // Set up the broadcast receiver for network events. Note that we also unregister
-        // this receiver again in onPause().
+        // this receiver again in onPause()
         mNetworkStateReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -256,25 +264,22 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         }
     }
 
-    public void testEmitter(){
-        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyMetadataChanged);
-        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyTrackChanged);
-        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyPlay);
-        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyPause);
-        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyLostPermission);
-    }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
         if (data != null) {
-            if (requestCode == REQUEST_CODE) {
+            if (requestCode == REQUEST_CODE_LOGIN) {
                 if (resultCode == RESULT_OK) {
                     RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
-//                    RequestSingleton.setSpotify_auth_token(data.getStringExtra("access_token"));
-                    intent = new Intent(this, CreateParty.class);
-                    startActivityForResult(intent, REQUEST_CODE_CREATE);
+                    RequestSingleton.setSpotify_auth_token(data.getStringExtra("access_token"));
                 }
+            } else if(requestCode == REQUEST_CODE_LOGIN_CREATE){
+                RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
+                RequestSingleton.setSpotify_auth_token(data.getStringExtra("access_token"));
+                intent = new Intent(this, CreateParty.class);
+                startActivityForResult(intent, REQUEST_CODE_CREATE);
+
             } else if (requestCode == REQUEST_CODE_CREATE) {
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
@@ -501,7 +506,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             case R.id.createPartyButton:
                 Log.d("MainActivity", "Create party button clicked");
                 Intent intent = new Intent(this, LoginActivity.class);
-                startActivityForResult(intent, REQUEST_CODE);
+                startActivityForResult(intent, REQUEST_CODE_LOGIN_CREATE);
                 break;
             case R.id.joinPartyButton:
                 Log.d("MainActivity", "Join party button clicked");

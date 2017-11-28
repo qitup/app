@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '25.0.0'
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "dubs.queueitup"
         minSdkVersion 21
@@ -63,6 +63,8 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:design:26.0.0-alpha1'
     compile 'com.android.support:support-v4:26.0.0-alpha1'
+    annotationProcessor 'com.jakewharton:butterknife:6.1.0'
+    compile 'com.jakewharton:butterknife:6.1.0'
     // https://mvnrepository.com/artifact/com.google.collections/google-collections
     compile group: 'com.google.guava', name: 'guava', version: '20.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
