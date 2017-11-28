@@ -19,6 +19,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import dubs.queueitup.Models.Party;
 import dubs.queueitup.Models.User;
 
@@ -27,6 +29,10 @@ public class CreateParty extends AppCompatActivity {
     private String baseURL = BuildConfig.scheme + "://" + getHost();
     private static final String HOST_EMULATOR = "10.0.2.2:8081";
 
+    @InjectView(R.id.partyName) EditText _party_name;
+    @InjectView(R.id.partyCode) EditText _party_code;
+    @InjectView(R.id.timeout) EditText _time_out;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,20 +40,21 @@ public class CreateParty extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        ButterKnife.inject(this);
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     public void submitParty(View view) {
-        EditText party_name_entry = (EditText) findViewById(R.id.partyName);
-        EditText party_code_entry = (EditText) findViewById(R.id.party_code);
-
-        Log.d("CreateParty", party_name_entry.getText().toString());
-        Log.d("CreateParty", party_code_entry.getText().toString());
+        Log.d("CreateParty", _party_name.getText().toString());
+        Log.d("CreateParty", _party_code.getText().toString());
+        Log.d("CreateParty", _time_out.getText().toString());
 
         JSONObject party_info = new JSONObject();
         try {
-            party_info.put("name", party_name_entry.getText().toString());
-            party_info.put("join_code", party_code_entry.getText().toString());
+            party_info.put("name", _party_name.getText().toString());
+            party_info.put("join_code", _party_code.getText().toString());
+            party_info.put("timeout", _time_out.getText().toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }

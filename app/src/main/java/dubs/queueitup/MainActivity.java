@@ -505,8 +505,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         switch (v.getId()) {
             case R.id.createPartyButton:
                 Log.d("MainActivity", "Create party button clicked");
-                Intent intent = new Intent(this, LoginActivity.class);
-                startActivityForResult(intent, REQUEST_CODE_LOGIN_CREATE);
+                Intent intent = new Intent(this, CreateParty.class);
+                startActivityForResult(intent, REQUEST_CODE_CREATE);
                 break;
             case R.id.joinPartyButton:
                 Log.d("MainActivity", "Join party button clicked");

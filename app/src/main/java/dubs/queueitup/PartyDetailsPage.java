@@ -9,8 +9,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import dubs.queueitup.Models.Party;
 
 /**
@@ -41,7 +39,7 @@ public class PartyDetailsPage extends Fragment {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.party_details_page, container, false);
 
-        pname = (TextView) view.findViewById(R.id.party_name);
+        pname = (TextView) view.findViewById(R.id.party_code_layout);
         jcode = (TextView) view.findViewById(R.id.join_code);
 
         if (savedInstanceState != null && party_details == null) {
