@@ -39,7 +39,9 @@ public class PartySingleton {
         this.isHost = isHost;
     }
 
-
+    public synchronized boolean inParty(){
+        return partySocket != null;
+    }
 
     public synchronized boolean isHost(){
         return isHost;

@@ -51,6 +51,8 @@ public class QueuePage extends Fragment implements Search.View {
         mPresenter = new QueuePresenter(getActivity(), this);
         mPresenter.init(RequestSingleton.getSpotify_auth_token());
 
+
+
         RecyclerView resultsList = v.findViewById(R.id.queue_list);
         RecyclerView playingNow = v.findViewById(R.id.now_playing);
         resultsList.setHasFixedSize(true);
@@ -61,17 +63,23 @@ public class QueuePage extends Fragment implements Search.View {
 
         mediaButton = v.findViewById(R.id.media_button);
 
+
+
         mediaButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(PlayerSingleton.getInstance(getActivity()).isPlaying() == 1){
-                    mediaButton.setImageResource(R.drawable.play_button);
-                } else {
-                    mediaButton.setImageResource(R.drawable.pause);
+                if(PartySingleton.getInstance(getActivity()).inParty()) {
+                    if (PlayerSingleton.getInstance(getActivity()).isPlaying() == 1) {
+                        mediaButton.setImageResource(R.drawable.play_button);
+                    } else {
+                        mediaButton.setImageResource(R.drawable.pause);
+                    }
+                    cListener.onMediaAction(mediaButton);
                 }
-                cListener.onMediaAction(mediaButton);
             }
         });
+
+        mediaButton.setEnabled(false);
 
         mAdapter = new QueueAdapter(getActivity(), new QueueAdapter.ItemVotedListener(){
             @Override
@@ -109,6 +117,7 @@ public class QueuePage extends Fragment implements Search.View {
 
     public void enableMediaButton(boolean enabled){
         mediaButton.setClickable(enabled);
+        mediaButton.setEnabled(enabled);
     }
 
     @Override

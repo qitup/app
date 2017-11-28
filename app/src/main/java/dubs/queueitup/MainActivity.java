@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -54,6 +55,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,9 +68,10 @@ import dubs.queueitup.Models.User;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.models.Track;
 
-public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener, SearchPage.OnTrackItemSelected, SpotifyPlayer.NotificationCallback, ConnectionStateCallback, QueuePage.OnMediaPlayerAction, PartyDetailsPage.leaveParty {
+public class MainActivity extends AppCompatActivity implements PartyPage.OnCreatePartyButtonListener, SearchPage.OnTrackItemSelected, SpotifyPlayer.NotificationCallback, QueuePage.OnMediaPlayerAction, PartyDetailsPage.leaveParty {
     private static final String TAG = "MainActivity";
     private NoSwiperPager viewPager;
+    private static final String PREFS_NAME = "QITUP";
     private AHBottomNavigation bottomNavigation;
     private BottomBarAdapter pagerAdapter;
     private static final String HOST_EMULATOR = "10.0.2.2:8081";
@@ -81,8 +84,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private SpotifyPlayer mPlayer;
     private PartySocket partySocket = null;
     private QueuePresenter mPresenter = null;
-    private String auth_token;
     private Intent intent;
+    private JSONObject jwt_token;
     private String currentAccessToken = null;
     private String currentClientId = null;
     private Party currentParty = null;
@@ -130,11 +133,22 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
         addBottomNavigationItems();
 
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivityForResult(intent, REQUEST_CODE);
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        String auth_string = settings.getString("auth_token", null);
+        if(auth_string != null){
+            try {
+                jwt_token =  new JSONObject(auth_string);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
-        playerEventsHandler.setCallback(this);
-        connectionEventsHandler.setCallback(this);
+
+            if(tokenExpired()){
+                refreshToken();
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("auth_token",jwt_token.toString());
+            }
+        }
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -162,6 +176,51 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 return true;
             }
         });
+    }
+
+    public boolean tokenExpired(){
+        try {
+            long expiry = jwt_token.getInt("exp") * 1000;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+//        if(LocalDateTime.now() > )
+        return false;
+    }
+
+    public void refreshToken(){
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/refresh", null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("Main", "Response is: " + response.toString());
+                        jwt_token = response;
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.wtf("Error", error.toString());
+                        if (error.networkResponse.statusCode == 400) {
+                            Toast.makeText(getApplicationContext(), "Party not found", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Error", "That didn't work!" + error.toString());
+                        }
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+
+                return params;
+            }
+        };
+
+
+        RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
 
     @Override
@@ -212,7 +271,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             if (requestCode == REQUEST_CODE) {
                 if (resultCode == RESULT_OK) {
                     RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
-                    RequestSingleton.setSpotify_auth_token(data.getStringExtra("access_token"));
+//                    RequestSingleton.setSpotify_auth_token(data.getStringExtra("access_token"));
+                    intent = new Intent(this, CreateParty.class);
+                    startActivityForResult(intent, REQUEST_CODE_CREATE);
                 }
             } else if (requestCode == REQUEST_CODE_CREATE) {
                 if (resultCode == RESULT_OK) {
@@ -232,6 +293,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     viewPager.getAdapter().notifyDataSetChanged();
 
                     mPresenter = ((QueuePage) pagerAdapter.getItem(1)).getPresenter();
+                    ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setEnabled(true);
                     try {
                         partySocket = newPartySocket(new URI(data.getStringExtra("socket_url")));
                     } catch (URISyntaxException e) {
@@ -252,6 +314,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     args.putParcelable("party", currentParty);
 
                     refreshQueue();
+
+                    ((QueuePage) pagerAdapter.getItem(1)).enableMediaButton(true);
 
                     try {
                         pagerAdapter.swapFragmentAt(createFragment(3, args), 0);
@@ -436,9 +500,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         switch (v.getId()) {
             case R.id.createPartyButton:
                 Log.d("MainActivity", "Create party button clicked");
-//                Toast.makeText(this, "Creating party", Toast.LENGTH_SHORT).show();
-                intent = new Intent(this, CreateParty.class);
-                startActivityForResult(intent, REQUEST_CODE_CREATE);
+                Intent intent = new Intent(this, LoginActivity.class);
+                startActivityForResult(intent, REQUEST_CODE);
                 break;
             case R.id.joinPartyButton:
                 Log.d("MainActivity", "Join party button clicked");
@@ -825,22 +888,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     @Override
-    public void onLoggedIn() {
-        Log.d("MainActivity", "User logged in");
-    }
-
-    @Override
-    public void onLoggedOut() {
-        Log.d("MainActivity", "User logged out");
-    }
-
-    @Override
-    public void onLoginFailed(Error error) {
-        Log.d("MainActivity", "Login failed");
-    }
-
-
-    @Override
     public void onPlaybackEvent(PlayerEvent playerEvent) {
         Log.d("MainActivity", "Playback event received: " + playerEvent.name());
         switch (playerEvent) {
@@ -860,17 +907,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         }
     }
 
-
-    @Override
-    public void onTemporaryError() {
-        Log.d("MainActivity", "Temporary error occurred");
-    }
-
-    @Override
-    public void onConnectionMessage(String message) {
-        Log.d("MainActivity", "Received connection message: " + message);
-    }
-
     public void setNowPlaying(int position) {
         Track item = mPresenter.removeQueueItem(position);
 
@@ -883,22 +919,22 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
     @Override
     public void onMediaAction(View v) {
-        if(PlayerSingleton.getInstance(this).isEmpty()){
-            makePlayerRequest("play");
-//            v.setBackgroundResource(R.drawable.pause);
-            PlayerSingleton.getInstance(this).setPlaying(1);
-            setNowPlaying(0);
-        } else {
-            if(PlayerSingleton.getInstance(this).isPlaying() == 1){
-                makePlayerRequest("pause");
-//                v.setBackgroundResource(R.drawable.play_button);
-                PlayerSingleton.getInstance(this).setPlaying(0);
-            } else {
+        if (currentParty != null) {
+            if (PlayerSingleton.getInstance(this).isEmpty()) {
                 makePlayerRequest("play");
                 PlayerSingleton.getInstance(this).setPlaying(1);
+                setNowPlaying(0);
+            } else {
+                if (PlayerSingleton.getInstance(this).isPlaying() == 1) {
+                    makePlayerRequest("pause");
+    //                v.setBackgroundResource(R.drawable.play_button);
+                    PlayerSingleton.getInstance(this).setPlaying(0);
+                } else {
+                    makePlayerRequest("play");
+                    PlayerSingleton.getInstance(this).setPlaying(1);
+                }
             }
         }
-
     }
 
     public void makePlayerRequest(String action){

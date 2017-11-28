@@ -83,9 +83,14 @@ public class SearchPage extends Fragment implements Search.View{
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                mActionListener.search(query);
-                searchView.clearFocus();
-                return true;
+                if(PartySingleton.getInstance(getActivity()).inParty()){
+                    mActionListener.search(query);
+                    searchView.clearFocus();
+                    return true;
+                } else {
+                    return false;
+                }
+
             }
 
             @Override

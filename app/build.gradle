@@ -16,22 +16,22 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            buildConfigField "string", "HOST", "http://api.qitup.ca"
+            buildConfigField "string", "HOST", "api.qitup.ca"
             buildConfigField "String", "clientID", '"SPOTIFY_ID"'
-            buildConfigField "string", "scheme", "http"
+            buildConfigField "string", "scheme", "https"
         }
         staging {
             applicationIdSuffix ".staging"
             buildConfigField "string", "HOST", "api.qitup.ca"
             buildConfigField "String", "clientID", '"SPOTIFY_ID"'
-            buildConfigField "String", "scheme", '"http"'
+            buildConfigField "String", "scheme", '"https"'
         }
         debug {
             applicationIdSuffix ".debug"
-            buildConfigField "String", "HOST", '"' + getIP() + ':8081"'
-//            buildConfigField "String", "HOST", '"api.qitup.ca"'
+//            buildConfigField "String", "HOST", '"' + getIP() + ':8081"'
+            buildConfigField "String", "HOST", '"api.qitup.ca"'
             buildConfigField "String", "clientID", '"SPOTIFY_ID"'
-            buildConfigField "String", "scheme", '"http"'
+            buildConfigField "String", "scheme", '"https"'
         }
     }
 }
