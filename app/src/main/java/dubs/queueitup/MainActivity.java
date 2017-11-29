@@ -424,14 +424,15 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                             });
                             break;
                         case "attendees.change":
-                            JSONObject res;
+                            JSONArray res;
 
                             try {
-                                res = response.getJSONObject("attendees");
+                                res = response.getJSONArray("attendees");
                             } catch (JSONException e){
                                 e.printStackTrace();
                                 return;
                             }
+                            updateAttendees(res);
 
                     }
                 } catch (JSONException e) {
