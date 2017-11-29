@@ -76,7 +76,7 @@ public class SignupActivity extends AppCompatActivity {
 
         JSONObject creds = new JSONObject();
         try {
-            creds.put("name", name);
+            creds.put("username", name);
             creds.put("email", email);
             creds.put("password", password);
         } catch (JSONException e) {
@@ -85,7 +85,7 @@ public class SignupActivity extends AppCompatActivity {
 
 
         // TODO: Implement your own signup logic here.
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/signup", creds,
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/signup", creds,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {

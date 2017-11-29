@@ -98,7 +98,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     protected void authenticate(JSONObject creds){
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/login", creds,
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/login", creds,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -134,6 +134,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 // TODO: Implement successful signup logic here
                 // By default we just finish the Activity and log them in automatically
+                RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
                 this.finish();
             }
         } else if(requestCode == REQUEST_SPOTIFY){
