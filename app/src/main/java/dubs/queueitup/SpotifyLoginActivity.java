@@ -16,6 +16,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -169,7 +170,15 @@ public class SpotifyLoginActivity extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error) {
                         Log.e("Error", "That didn't work!" + error.toString());
                     }
-                });
+                }) { @Override
+        public Map<String, String> getHeaders() throws AuthFailureError {
+            Map<String, String> params = new HashMap<String, String>();
+            String jwt_token = getIntent().getStringExtra("jwt_token");
+            if(jwt_token != null){
+                params.put("Authorization", "Bearer " + jwt_token);
+            }
+            return params;
+        }};
 
         RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
