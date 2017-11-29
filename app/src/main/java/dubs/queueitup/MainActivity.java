@@ -435,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                             updateAttendees(res);
                             break;
                         case "host.promotion":
-                            JSONObject host;
+                            final JSONObject host;
 
                             try {
                                 host = response.getJSONObject("host");
@@ -443,9 +443,14 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                 e.printStackTrace();
                                 return;
                             }
-                            notifyAndTransfer(host);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    notifyAndTransfer(host);
+                                    Toast.makeText(getApplicationContext(), "You are now the host of the party!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                             break;
-
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -455,7 +460,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public void notifyAndTransfer(JSONObject host){
-        Toast.makeText(getApplicationContext(), "You are now the host of the party!", Toast.LENGTH_SHORT).show();
         try {
             currentParty.setHost(new User(host.getString("id"), host.getString("name"), host.get("avatar_url").toString()));
         } catch (JSONException e) {
