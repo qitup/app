@@ -49,7 +49,7 @@ public class QueuePage extends Fragment implements Search.View {
         View v = inflater.inflate(R.layout.queue_page, container, false);
 
         mPresenter = new QueuePresenter(getActivity(), this);
-        mPresenter.init(RequestSingleton.getSpotify_auth_token());
+//        mPresenter.init(RequestSingleton.getSpotify_auth_token());
 
         RecyclerView resultsList = v.findViewById(R.id.queue_list);
         RecyclerView playingNow = v.findViewById(R.id.now_playing);
