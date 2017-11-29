@@ -28,7 +28,9 @@ import java.net.CookieHandler;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SpotifyLoginActivity extends AppCompatActivity {
 
@@ -112,7 +114,15 @@ public class SpotifyLoginActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
             }
         });
-        mWebview.loadUrl(url);
+        String jwt_token = getIntent().getStringExtra("jwt_token");
+        if(jwt_token != null){
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authorization", "Bearer "+jwt_token);
+            mWebview.loadUrl(url, headers);
+        } else {
+            mWebview.loadUrl(url);
+        }
+
 
         super.onCreate(savedInstanceState);
     }

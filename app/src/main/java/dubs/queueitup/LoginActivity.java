@@ -139,7 +139,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         } else if(requestCode == REQUEST_SPOTIFY){
             RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
-            RequestSingleton.setSpotify_auth_token(data.getStringExtra("access_token"));
             this.finish();
         }
     }

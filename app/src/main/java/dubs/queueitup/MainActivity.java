@@ -274,12 +274,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
                     getSpotifyToken();
                 }
-            } else if(requestCode == REQUEST_CODE_LOGIN_CREATE){
-                RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
-                getSpotifyToken();
-                intent = new Intent(this, CreateParty.class);
-                startActivityForResult(intent, REQUEST_CODE_CREATE);
-
             } else if (requestCode == REQUEST_CODE_CREATE) {
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
@@ -531,7 +525,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     @NonNull
     private Bundle createFragmentBundle() {
         Bundle bundle = new Bundle();
-        bundle.putInt("color", R.color.textColorDefault);
         return bundle;
     }
 
@@ -541,9 +534,17 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     public void onCreateParty(View v) {
         switch (v.getId()) {
             case R.id.createPartyButton:
-                Log.d("MainActivity", "Create party button clicked");
-                Intent intent = new Intent(this, CreateParty.class);
-                startActivityForResult(intent, REQUEST_CODE_CREATE);
+                if(canUserHost()){
+                    Log.d("MainActivity", "Create party button clicked");
+                    Intent intent = new Intent(this, CreateParty.class);
+                    startActivityForResult(intent, REQUEST_CODE_CREATE);
+                } else {
+                    Intent intent = new Intent(this, SpotifyLoginActivity.class);
+                    intent.putExtra("jwt_token", RequestSingleton.getJWT_token());
+
+                    startActivityForResult(intent, REQUEST_CODE_LOGIN);
+                }
+
                 break;
             case R.id.joinPartyButton:
                 Log.d("MainActivity", "Join party button clicked");
@@ -554,6 +555,21 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         }
 
     }
+
+    public boolean canUserHost(){
+        String token = RequestSingleton.getJWT_token();
+        JSONObject claim = null;
+        boolean canHost = false;
+        try {
+            claim = new JSONObject(JWTUtils.decoded(token));
+            canHost = claim.getBoolean("can_host");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return canHost;
+    }
+
+
 
     @Override
     public void addTrack(Track track) {
