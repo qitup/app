@@ -72,6 +72,9 @@ public class QueuePresenter implements Search.ActionListener {
     }
 
     public void addPlaying(final String id){
+        if(spotifyApi == null){
+            init(RequestSingleton.getSpotify_auth_token());
+        }
         mSpotifyApi = spotifyApi.getService();
 
         LoadPTrackTask task = new LoadPTrackTask();
