@@ -320,8 +320,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
                     refreshQueue();
 
-                    ((QueuePage) pagerAdapter.getItem(1)).enableMediaButton(true);
-
                     try {
                         pagerAdapter.swapFragmentAt(createFragment(3, args), 0);
                     } catch (Exception e) {
@@ -362,6 +360,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         Log.d("Main", "Response is: " + response.toString());
 
                         RequestSingleton.setSpotify_auth_token(response.toString());
+                        ((QueuePage) pagerAdapter.getItem(1)).setToken();
                     }
                 },
                 new Response.ErrorListener() {
