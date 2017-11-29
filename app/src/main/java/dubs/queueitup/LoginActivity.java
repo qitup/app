@@ -131,10 +131,10 @@ public class LoginActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_SIGNUP) {
             if (resultCode == RESULT_OK) {
-
                 // TODO: Implement successful signup logic here
                 // By default we just finish the Activity and log them in automatically
                 RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
+                setResult(RESULT_OK, data);
                 this.finish();
             }
         } else if(requestCode == REQUEST_SPOTIFY){
