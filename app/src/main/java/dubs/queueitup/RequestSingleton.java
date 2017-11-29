@@ -75,7 +75,6 @@ public class RequestSingleton {
         return spotify_auth_token;
     }
 
-
     public ImageLoader getImageLoader() {
         return mImageLoader;
     }

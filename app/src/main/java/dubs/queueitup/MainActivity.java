@@ -2,6 +2,7 @@ package dubs.queueitup;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -78,7 +79,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private static final String CLIENT_ID = BuildConfig.clientID;
     private static final String REDIRECT_URI = "queueitup-login://callback";
     private static String baseURL = BuildConfig.scheme + "://" + getHost();
-    private static final int REQUEST_CODE = 1337;
+    private static final int REQUEST_CODE_LOGIN_CREATE = 1336;
+    private static final int REQUEST_CODE_LOGIN = 1337;
     private static final int REQUEST_CODE_CREATE = 1338;
     private static final int REQUEST_CODE_JOIN = 1339;
     private SpotifyPlayer mPlayer;
@@ -118,37 +120,44 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d("PACKAGE ID", getApplicationInfo().packageName);
-
         AppCompatDelegate.setDefaultNightMode(
                 AppCompatDelegate.MODE_NIGHT_AUTO);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         setupViewPager();
-
         bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
         setupBottomNavBehaviors();
         setupBottomNavStyle();
-
         addBottomNavigationItems();
 
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        String auth_string = settings.getString("auth_token", null);
-        if(auth_string != null){
-            try {
-                jwt_token =  new JSONObject(auth_string);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivityForResult(intent, REQUEST_CODE_LOGIN);
 
-
-            if(tokenExpired()){
-                refreshToken();
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putString("auth_token",jwt_token.toString());
-            }
-        }
+//        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+//        String auth_string = settings.getString("jwt_token", null);
+//        if(auth_string != null){
+//            try {
+//                jwt_token =  new JSONObject(auth_string);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//
+//            if(tokenExpired()){
+//                refreshToken();
+//                SharedPreferences.Editor editor = settings.edit();
+//                editor.putString("jwt_token",jwt_token.toString());
+//                editor.commit();
+//            }
+//            try {
+//                RequestSingleton.setJWT_token(jwt_token.getString("access_token"));
+//                RequestSingleton.setSpotify_auth_token(jwt_token.getString("access_token"));
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        } else {
+//            Intent intent = new Intent(this, LoginActivity.class);
+//            startActivityForResult(intent, REQUEST_CODE_LOGIN);
+//        }
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -179,17 +188,14 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public boolean tokenExpired(){
-        long expiry;
+        long expiry = 0;
         try {
             expiry = jwt_token.getInt("exp") * 1000;
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        if(System.currentTimeMillis() > expiry){
-
-        }
-        return false;
+        return System.currentTimeMillis() > expiry;
     }
 
     public void refreshToken(){
@@ -238,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         super.onResume();
 
         // Set up the broadcast receiver for network events. Note that we also unregister
-        // this receiver again in onPause().
+        // this receiver again in onPause()
         mNetworkStateReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -259,24 +265,15 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         }
     }
 
-    public void testEmitter(){
-        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyMetadataChanged);
-        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyTrackChanged);
-        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyPlay);
-        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyPause);
-        playerEventsHandler.onPlaybackEvent(PlayerEvent.kSpPlaybackNotifyLostPermission);
-    }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
         if (data != null) {
-            if (requestCode == REQUEST_CODE) {
+            if (requestCode == REQUEST_CODE_LOGIN) {
                 if (resultCode == RESULT_OK) {
                     RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
-//                    RequestSingleton.setSpotify_auth_token(data.getStringExtra("access_token"));
-                    intent = new Intent(this, CreateParty.class);
-                    startActivityForResult(intent, REQUEST_CODE_CREATE);
+                    getSpotifyToken();
                 }
             } else if (requestCode == REQUEST_CODE_CREATE) {
                 if (resultCode == RESULT_OK) {
@@ -318,8 +315,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
                     refreshQueue();
 
-                    ((QueuePage) pagerAdapter.getItem(1)).enableMediaButton(true);
-
                     try {
                         pagerAdapter.swapFragmentAt(createFragment(3, args), 0);
                     } catch (Exception e) {
@@ -349,6 +344,45 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             final String id = parts[parts.length - 1];
             mPresenter.addQueueItem(id);
         }
+    }
+
+    public void getSpotifyToken(){
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/spotify/token", null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("Main", "Response is: " + response.toString());
+
+                        try {
+                            RequestSingleton.setSpotify_auth_token(response.getString("access_token"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.wtf("Error", error.toString());
+                        if (error.networkResponse.statusCode == 400) {
+                            Toast.makeText(getApplicationContext(), "Party not found", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Error", "That didn't work!" + error.toString());
+                        }
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+
+                return params;
+            }
+        };
+
+
+        RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
 
     private PartySocket newPartySocket(URI uri) {
@@ -390,20 +424,46 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                             });
                             break;
                         case "attendees.change":
-                            JSONObject res;
+                            JSONArray res;
 
                             try {
-                                res = response.getJSONObject("attendees");
+                                res = response.getJSONArray("attendees");
                             } catch (JSONException e){
                                 e.printStackTrace();
                                 return;
                             }
+                            updateAttendees(res);
+                            break;
+                        case "host.promotion":
+                            final JSONObject host;
 
+                            try {
+                                host = response.getJSONObject("host");
+                            } catch (JSONException e){
+                                e.printStackTrace();
+                                return;
+                            }
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    notifyAndTransfer(host);
+                                    Toast.makeText(getApplicationContext(), "You are now the host of the party!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            break;
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
+        };
+    }
+
+    public void notifyAndTransfer(JSONObject host){
+        try {
+            currentParty.setHost(new User(host.getString("id"), host.getString("name"), host.get("avatar_url").toString()));
+        } catch (JSONException e) {
+            e.printStackTrace();
         };
     }
 
@@ -437,6 +497,23 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 e.printStackTrace();
             }
         }
+    }
+
+    public void updateAttendees(JSONArray users){
+        List<User> attendees = new ArrayList<>();
+        for (int i = 0; i < users.length(); i++){
+            JSONObject guest = null;
+            try {
+
+                guest = users.getJSONObject(i).getJSONObject("user");
+                User user = new User(guest.getString("id"), guest.get("name").toString(), guest.get("avatar_url").toString());
+                attendees.add(i, user);
+                Log.d("Attendee Change", guest.get("name").toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        currentParty.setAttendees(attendees);
     }
 
     public static String getHost() {
@@ -492,7 +569,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     @NonNull
     private Bundle createFragmentBundle() {
         Bundle bundle = new Bundle();
-        bundle.putInt("color", R.color.textColorDefault);
         return bundle;
     }
 
@@ -502,9 +578,17 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     public void onCreateParty(View v) {
         switch (v.getId()) {
             case R.id.createPartyButton:
-                Log.d("MainActivity", "Create party button clicked");
-                Intent intent = new Intent(this, LoginActivity.class);
-                startActivityForResult(intent, REQUEST_CODE);
+                if(canUserHost()){
+                    Log.d("MainActivity", "Create party button clicked");
+                    Intent intent = new Intent(this, CreateParty.class);
+                    startActivityForResult(intent, REQUEST_CODE_CREATE);
+                } else {
+                    Intent intent = new Intent(this, SpotifyLoginActivity.class);
+                    intent.putExtra("jwt_token", RequestSingleton.getJWT_token());
+
+                    startActivityForResult(intent, REQUEST_CODE_LOGIN);
+                }
+
                 break;
             case R.id.joinPartyButton:
                 Log.d("MainActivity", "Join party button clicked");
@@ -515,6 +599,21 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         }
 
     }
+
+    public boolean canUserHost(){
+        String token = RequestSingleton.getJWT_token();
+        JSONObject claim = null;
+        boolean canHost = false;
+        try {
+            claim = new JSONObject(JWTUtils.decoded(token));
+            canHost = claim.getBoolean("can_host");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return canHost;
+    }
+
+
 
     @Override
     public void addTrack(Track track) {
@@ -975,6 +1074,50 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
 
+    public void leaveRequest(String transferTo){
+        String requestURL = baseURL + "/party/leave/?id=" + currentParty.getID();
+        if(transferTo != null){
+            requestURL = requestURL + "&transfer_to="+transferTo;
+        }
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestURL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("Main", "Response is: " + response.toString());
+
+                        try {
+                            pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        viewPager.getAdapter().notifyDataSetChanged();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.wtf("Error", error.toString());
+                        if (error.networkResponse.statusCode == 400) {
+                            Toast.makeText(getApplicationContext(), "Host Error", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Error", "That didn't work!" + error.toString());
+                        }
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+
+                return params;
+            }
+        };
+
+
+        RequestSingleton.getInstance(this).addToRequestQueue(request);
+    }
+
     @Override
     public void leaveParty(View v) {
 
@@ -988,65 +1131,54 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             e.printStackTrace();
         }
 
-        List<User> users = currentParty.getAttendees();
-
-
+        final List<User> users = currentParty.getAttendees();
 
         if(!user_id.equals(currentParty.getHost().getId()) || users.size() == 0) {
-            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/leave/?id=" + currentParty.getID(), null,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            // Display the first 500 characters of the response string.
-                            Log.d("Main", "Response is: " + response.toString());
-
-                            try {
-                                pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            viewPager.getAdapter().notifyDataSetChanged();
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.wtf("Error", error.toString());
-                            if (error.networkResponse.statusCode == 400) {
-                                Toast.makeText(getApplicationContext(), "Host Error", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Log.e("Error", "That didn't work!" + error.toString());
-                            }
-                        }
-                    }) {
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
-                    Map<String, String> params = new HashMap<String, String>();
-                    params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
-
-                    return params;
-                }
-            };
-
-
-            RequestSingleton.getInstance(this).addToRequestQueue(request);
+            leaveRequest(null);
         } else {
             List<String> names = new ArrayList<>();
+                        AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
+            builderSingle.setIcon(R.drawable.ic_reorder_white_48dp);
+            builderSingle.setTitle("Transfer Host Permissions:");
+
+            final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_singlechoice);
 
             for (int i=0; i < users.size(); i++){
                 User user = users.get(i);
-                names.add(i, user.getName());
+                arrayAdapter.add(user.getName());
             }
 
-            AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
-            LayoutInflater inflater = getLayoutInflater();
-            View convertView = (View) inflater.inflate(R.layout.list, null);
-            alertDialog.setView(convertView);
-            alertDialog.setTitle("List");
-            ListView lv = (ListView) convertView.findViewById(R.id.lv);
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,names);
-            lv.setAdapter(adapter);
-            alertDialog.show();
+            builderSingle.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+
+            builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, final int which) {
+                    final String strName = arrayAdapter.getItem(which);
+                    AlertDialog.Builder builderInner = new AlertDialog.Builder(MainActivity.this);
+                    builderInner.setMessage(strName);
+                    builderInner.setTitle("Transfer permissions to this user?");
+                    builderInner.setPositiveButton("Transfer", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog,int which2) {
+                            leaveRequest(users.get(which).getId());
+                            dialog.dismiss();
+                        }
+                    });
+                    builderInner.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog,int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    builderInner.show();
+                }
+            });
+            builderSingle.show();
         }
     }
 }

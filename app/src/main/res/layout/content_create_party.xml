@@ -4,29 +4,98 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/tabbar_background"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="dubs.queueitup.CreateParty"
-    android:background="@color/tabbar_background"
     tools:showIn="@layout/activity_create_party">
 
 
-    <EditText
-        android:id="@+id/partyName"
-        style="@android:style/Widget.DeviceDefault.EditText"
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/party_name_layout"
+        android:layout_width="584dp"
+        android:layout_height="wrap_content"
+        android:textColorHint="@color/tabTextColor"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteX="8dp">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/partyName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Party Name"
+            android:textColor="@color/textColorDefault"
+            android:textColorHint="@color/tabTextColor"
+            android:textColorLink="@color/colorPrimary" />
+
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/party_code_layout"
+        android:layout_width="584dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:textColorHint="@color/tabTextColor"
+        app:layout_constraintBottom_toTopOf="@+id/timeout_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline"
+        tools:layout_editor_absoluteX="8dp">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/partyCode"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="Party Code"
+            android:textColor="@color/textColorDefault"
+            android:textColorHint="@color/tabTextColor"
+            android:textColorLink="@color/colorPrimary" />
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/timeout_layout"
+        android:layout_width="584dp"
+        android:layout_height="wrap_content"
+        android:textColorHint="@color/tabTextColor"
+        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteX="8dp">
+
+        <EditText
+            android:id="@+id/timeout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="Timeout (minutes)"
+            android:inputType="time"
+            android:textColor="@color/textColorDefault"
+            android:textColorHint="@color/tabTextColor" />
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:ems="10"
-        android:textColor="@android:color/white"
-        android:inputType="textPersonName"
-        app:layout_constraintHorizontal_bias="0.432"
-        app:layout_constraintLeft_toRightOf="@+id/party_name_label"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline2" />
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.66"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="543dp" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.33"
+        tools:layout_editor_absoluteY="272dp"
+        tools:layout_editor_absoluteX="0dp" />
 
     <Button
         android:id="@+id/button"
@@ -44,59 +113,4 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
-    <TextView
-        android:id="@+id/party_name_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Party Name:"
-        android:textSize="18sp"
-        android:textColor="@android:color/white"
-        android:layout_marginLeft="16dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="@+id/partyName"
-        android:layout_marginTop="8dp" />
-
-    <TextView
-        android:id="@+id/textView6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:text="Party Code"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintBottom_toBottomOf="@+id/party_code"
-        android:layout_marginBottom="8dp"
-        android:layout_marginStart="16dp"
-        app:layout_constraintTop_toTopOf="@+id/guideline2"
-        android:layout_marginTop="8dp" />
-
-    <EditText
-        android:id="@+id/party_code"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:ems="10"
-        android:textColor="@android:color/white"
-        android:inputType="textPersonName"
-        app:layout_constraintLeft_toRightOf="@+id/textView6"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.506"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintTop_toTopOf="@+id/guideline2"
-        android:layout_marginTop="8dp" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.5"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="301dp" />
 </android.support.constraint.ConstraintLayout>

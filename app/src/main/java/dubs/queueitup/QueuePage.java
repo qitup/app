@@ -49,9 +49,7 @@ public class QueuePage extends Fragment implements Search.View {
         View v = inflater.inflate(R.layout.queue_page, container, false);
 
         mPresenter = new QueuePresenter(getActivity(), this);
-        mPresenter.init(RequestSingleton.getSpotify_auth_token());
-
-
+//        mPresenter.init(RequestSingleton.getSpotify_auth_token());
 
         RecyclerView resultsList = v.findViewById(R.id.queue_list);
         RecyclerView playingNow = v.findViewById(R.id.now_playing);
@@ -62,8 +60,6 @@ public class QueuePage extends Fragment implements Search.View {
         playingNow.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         mediaButton = v.findViewById(R.id.media_button);
-
-
 
         mediaButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,8 +74,6 @@ public class QueuePage extends Fragment implements Search.View {
                 }
             }
         });
-
-        mediaButton.setEnabled(false);
 
         mAdapter = new QueueAdapter(getActivity(), new QueueAdapter.ItemVotedListener(){
             @Override
@@ -103,6 +97,10 @@ public class QueuePage extends Fragment implements Search.View {
 
     public QueuePresenter getPresenter() {
         return mPresenter;
+    }
+
+    public void setToken(){
+
     }
 
     @Override

@@ -1,12 +1,14 @@
 package dubs.queueitup;
 
+/**
+ * Created by Ryan on 2017-11-28.
+ */
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-
-import android.content.Intent;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.Button;
@@ -25,80 +27,65 @@ import org.json.JSONObject;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class LoginActivity extends AppCompatActivity {
-    private static final String TAG = "LoginActivity";
-    private static final int REQUEST_SIGNUP = 0;
-    private static final int REQUEST_SPOTIFY = 1;
+public class SignupActivity extends AppCompatActivity {
+    private static final String TAG = "SignupActivity";
     private static String baseURL = BuildConfig.scheme + "://" + getHost();
     private static final String HOST_EMULATOR = "10.0.2.2:8081";
 
+    @InjectView(R.id.input_name) EditText _nameText;
     @InjectView(R.id.input_email) EditText _emailText;
     @InjectView(R.id.input_password) EditText _passwordText;
-    @InjectView(R.id.btn_login) Button _loginButton;
-    @InjectView(R.id.btn_spotify_login) Button _spotifyLoginButton;
-    @InjectView(R.id.link_signup) TextView _signupLink;
+    @InjectView(R.id.btn_signup) Button _signupButton;
+    @InjectView(R.id.link_login) TextView _loginLink;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_signup);
         ButterKnife.inject(this);
 
-        _spotifyLoginButton.setOnClickListener(new View.OnClickListener() {
-
+        _signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), SpotifyLoginActivity.class);
-                startActivityForResult(intent, REQUEST_SPOTIFY);
+                signup();
             }
         });
 
-        _loginButton.setOnClickListener(new View.OnClickListener() {
-
+        _loginLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                login();
-            }
-        });
-
-        _signupLink.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                // Start the Signup activity
-                Intent intent = new Intent(getApplicationContext(), SignupActivity.class);
-                startActivityForResult(intent, REQUEST_SIGNUP);
+                // Finish the registration screen and return to the Login activity
+                finish();
             }
         });
     }
 
-    public void login() {
-        Log.d(TAG, "Login");
+    public void signup() {
+        Log.d(TAG, "Signup");
 
         if (!validate()) {
-            onLoginFailed();
+            onSignupFailed();
             return;
         }
 
-        _loginButton.setEnabled(false);
+        _signupButton.setEnabled(false);
 
+        String name = _nameText.getText().toString();
         String email = _emailText.getText().toString();
         String password = _passwordText.getText().toString();
 
         JSONObject creds = new JSONObject();
         try {
+            creds.put("username", name);
             creds.put("email", email);
             creds.put("password", password);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        // TODO: Implement your own authentication logic here.
-        authenticate(creds);
-    }
 
-    protected void authenticate(JSONObject creds){
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/login", creds,
+        // TODO: Implement your own signup logic here.
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/signup", creds,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -112,61 +99,56 @@ public class LoginActivity extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        onLoginSuccess(intent);
+                        onSignupSuccess(intent);
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.e("Error", "That didn't work!" + error.toString());
-                        onLoginFailed();
+                        onSignupFailed();
                     }
                 });
 
         RequestSingleton.getInstance(this).addToRequestQueue(request);
+
+//        new android.os.Handler().postDelayed(
+//                new Runnable() {
+//                    public void run() {
+//                        // On complete call either onSignupSuccess or onSignupFailed
+//                        // depending on success
+//                        onSignupSuccess();
+//                        // onSignupFailed();
+//                    }
+//                }, 3000);
     }
 
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_SIGNUP) {
-            if (resultCode == RESULT_OK) {
-                // TODO: Implement successful signup logic here
-                // By default we just finish the Activity and log them in automatically
-                RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
-                setResult(RESULT_OK, data);
-                this.finish();
-            }
-        } else if(requestCode == REQUEST_SPOTIFY){
-            RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
-            setResult(RESULT_OK, data);
-            this.finish();
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        // disable going back to the MainActivity
-        moveTaskToBack(true);
-    }
-
-    public void onLoginSuccess(Intent intent) {
-        _loginButton.setEnabled(true);
+    public void onSignupSuccess(Intent intent) {
+        _signupButton.setEnabled(true);
         setResult(RESULT_OK, intent);
         finish();
     }
 
-    public void onLoginFailed() {
+    public void onSignupFailed() {
         Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_LONG).show();
 
-        _loginButton.setEnabled(true);
+        _signupButton.setEnabled(true);
     }
 
     public boolean validate() {
         boolean valid = true;
 
+        String name = _nameText.getText().toString();
         String email = _emailText.getText().toString();
         String password = _passwordText.getText().toString();
+
+        if (name.isEmpty() || name.length() < 3) {
+            _nameText.setError("at least 3 characters");
+            valid = false;
+        } else {
+            _nameText.setError(null);
+        }
 
         if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             _emailText.setError("enter a valid email address");
@@ -188,4 +170,5 @@ public class LoginActivity extends AppCompatActivity {
     public static String getHost() {
         return (Build.PRODUCT).contains("sdk") ? HOST_EMULATOR : BuildConfig.HOST;
     }
+
 }

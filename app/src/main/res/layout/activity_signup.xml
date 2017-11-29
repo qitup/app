@@ -11,8 +11,7 @@
         android:orientation="vertical"
         android:paddingLeft="24dp"
         android:paddingRight="24dp"
-        android:paddingTop="56dp"
-        android:weightSum="1">
+        android:paddingTop="56dp">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -21,19 +20,32 @@
             android:layout_marginBottom="24dp"
             android:src="@drawable/ic_reorder_white_48dp" />
 
+        <!--  Name Label -->
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp">
+
+            <EditText
+                android:id="@+id/input_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Username"
+                android:inputType="textCapWords" />
+        </android.support.design.widget.TextInputLayout>
+
         <!-- Email Label -->
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:layout_marginTop="8dp"
-            android:focusedByDefault="false">
+            android:layout_marginTop="8dp">
 
             <EditText
                 android:id="@+id/input_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:focusedByDefault="false"
                 android:hint="Email"
                 android:inputType="textEmailAddress" />
         </android.support.design.widget.TextInputLayout>
@@ -43,62 +55,35 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:layout_marginTop="8dp"
-            android:focusedByDefault="false">
+            android:layout_marginTop="8dp">
 
             <EditText
                 android:id="@+id/input_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:focusedByDefault="false"
                 android:hint="Password"
-                android:inputType="textPassword"
-                android:textColor="@color/textColorDefault"
-                android:textColorHint="@color/textColorDefault" />
+                android:inputType="textPassword" />
         </android.support.design.widget.TextInputLayout>
 
+        <!-- Signup Button -->
         <android.support.v7.widget.AppCompatButton
-            android:id="@+id/btn_login"
+            android:id="@+id/btn_signup"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
             android:layout_marginTop="24dp"
             android:background="@drawable/login_button"
             android:padding="12dp"
-            android:text="Login" />
+            android:text="Create Account" />
 
         <TextView
-            android:id="@+id/or"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="or"
-            android:textColor="@color/textColorDefault"
-            android:textSize="16dip" />
-
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/btn_spotify_login"
-            android:layout_width="match_parent"
-            android:layout_height="61dp"
-            android:layout_marginBottom="24dp"
-            android:layout_marginTop="24dp"
-            android:layout_weight="0.03"
-            android:background="@drawable/rounded_button"
-            android:drawableLeft="@drawable/spotify_white"
-            android:fontFamily="sans-serif"
-            android:padding="12dp"
-            android:text="Login with Spotify"
-            android:textColor="@color/textColorDefault"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/link_signup"
+            android:id="@+id/link_login"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
             android:gravity="center"
+            android:text="Already a member? Login"
             android:textColor="@color/textColorDefault"
-            android:text="No account yet? Create one"
             android:textSize="16dip" />
 
     </LinearLayout>

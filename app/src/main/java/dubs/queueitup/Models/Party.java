@@ -67,6 +67,10 @@ public class Party implements Parcelable{
         return host;
     }
 
+    public void setHost(User newHost){
+        this.host = newHost;
+    }
+
     public String getID(){
         return id;
     }
@@ -85,6 +89,10 @@ public class Party implements Parcelable{
 
     public List<User> getAttendees(){
         return attendees;
+    }
+
+    public void setAttendees(List<User> users){
+        this.attendees = users;
     }
 
     @Override

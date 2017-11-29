@@ -38,10 +38,10 @@
 
     <Button
         android:id="@+id/createPartyButton"
-        android:layout_width="120dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="32dp"
-        android:background="@color/colorPrimaryDark"
+        android:background="@drawable/party_button"
         android:text="@string/create_party"
         android:textColor="@color/textColorDefault"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
@@ -50,10 +50,10 @@
 
     <Button
         android:id="@+id/joinPartyButton"
-        android:layout_width="120dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:background="@color/colorPrimaryDark"
+        android:background="@drawable/party_button"
         android:text="@string/join_party"
         android:textColor="@color/textColorDefault"
         app:layout_constraintLeft_toLeftOf="parent"
