@@ -87,6 +87,10 @@ public class Party implements Parcelable{
         return attendees;
     }
 
+    public void setAttendees(List<User> users){
+        this.attendees = users;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(name);

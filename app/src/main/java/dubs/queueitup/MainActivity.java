@@ -2,6 +2,7 @@ package dubs.queueitup;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -469,6 +470,21 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void updateAttendees(JSONArray users){
+        List<User> attendees = new ArrayList<>();
+        for (int i = 0; i < users.length(); i++){
+            JSONObject guest = null;
+            try {
+                guest = users.getJSONObject(i).getJSONObject("user");
+                User user = new User(guest.getString("id"), guest.get("name").toString(), guest.get("avatar_url").toString());
+                attendees.add(i, user);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
         }
     }
 
@@ -1030,6 +1046,46 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
 
+    public void leaveRequest(){
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/leave/?id=" + currentParty.getID(), null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("Main", "Response is: " + response.toString());
+
+                        try {
+                            pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        viewPager.getAdapter().notifyDataSetChanged();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.wtf("Error", error.toString());
+                        if (error.networkResponse.statusCode == 400) {
+                            Toast.makeText(getApplicationContext(), "Host Error", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Error", "That didn't work!" + error.toString());
+                        }
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+
+                return params;
+            }
+        };
+
+
+        RequestSingleton.getInstance(this).addToRequestQueue(request);
+    }
+
     @Override
     public void leaveParty(View v) {
 
@@ -1045,63 +1101,52 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
         List<User> users = currentParty.getAttendees();
 
-
-
         if(!user_id.equals(currentParty.getHost().getId()) || users.size() == 0) {
-            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/leave/?id=" + currentParty.getID(), null,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            // Display the first 500 characters of the response string.
-                            Log.d("Main", "Response is: " + response.toString());
-
-                            try {
-                                pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            viewPager.getAdapter().notifyDataSetChanged();
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.wtf("Error", error.toString());
-                            if (error.networkResponse.statusCode == 400) {
-                                Toast.makeText(getApplicationContext(), "Host Error", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Log.e("Error", "That didn't work!" + error.toString());
-                            }
-                        }
-                    }) {
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
-                    Map<String, String> params = new HashMap<String, String>();
-                    params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
-
-                    return params;
-                }
-            };
-
-
-            RequestSingleton.getInstance(this).addToRequestQueue(request);
+            leaveRequest();
         } else {
             List<String> names = new ArrayList<>();
+                        AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
+            builderSingle.setIcon(R.drawable.ic_home_black_24dp);
+            builderSingle.setTitle("Transfer Host Permissions:");
+
+            final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_singlechoice);
 
             for (int i=0; i < users.size(); i++){
                 User user = users.get(i);
-                names.add(i, user.getName());
+                arrayAdapter.add(user.getName());
             }
 
-            AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
-            LayoutInflater inflater = getLayoutInflater();
-            View convertView = (View) inflater.inflate(R.layout.list, null);
-            alertDialog.setView(convertView);
-            alertDialog.setTitle("List");
-            ListView lv = (ListView) convertView.findViewById(R.id.lv);
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,names);
-            lv.setAdapter(adapter);
-            alertDialog.show();
+            builderSingle.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+
+            builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    String strName = arrayAdapter.getItem(which);
+                    AlertDialog.Builder builderInner = new AlertDialog.Builder(MainActivity.this);
+                    builderInner.setMessage(strName);
+                    builderInner.setTitle("Transfer permissions to this user?");
+                    builderInner.setPositiveButton("Transfer", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog,int which) {
+                            leaveRequest();
+                            dialog.dismiss();
+                        }
+                    });
+                    builderInner.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog,int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    builderInner.show();
+                }
+            });
+            builderSingle.show();
         }
     }
 }
