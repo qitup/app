@@ -119,9 +119,9 @@ public class SpotifyLoginActivity extends AppCompatActivity {
             String cookieString = "Authorization" + "=" + jwt_token + "; Domain=" + getHost();
             cookieManager.setCookie(getHost(), cookieString);
             Log.d("CookieUrl",cookieString + " ");
-        } else {
-            mWebview.loadUrl(url);
         }
+
+        mWebview.loadUrl(url);
 
 
         super.onCreate(savedInstanceState);
