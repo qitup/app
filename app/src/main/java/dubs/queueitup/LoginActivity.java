@@ -29,6 +29,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     private static final int REQUEST_SIGNUP = 0;
     private static final int REQUEST_SPOTIFY = 1;
+    private static String baseURL = BuildConfig.scheme + "://" + getHost();
     private static final String HOST_EMULATOR = "10.0.2.2:8081";
 
     @InjectView(R.id.input_email) EditText _emailText;
@@ -81,26 +82,48 @@ public class LoginActivity extends AppCompatActivity {
 
         _loginButton.setEnabled(false);
 
-        final ProgressDialog progressDialog = new ProgressDialog(LoginActivity.this,
-                R.style.Theme_AppCompat_DayNight_Dialog);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setMessage("Authenticating...");
-        progressDialog.show();
-
         String email = _emailText.getText().toString();
         String password = _passwordText.getText().toString();
 
-        // TODO: Implement your own authentication logic here.
+        JSONObject creds = new JSONObject();
+        try {
+            creds.put("email", email);
+            creds.put("password", password);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        // On complete call either onLoginSuccess or onLoginFailed
+        // TODO: Implement your own authentication logic here.
+        authenticate(creds);
+    }
+
+    protected void authenticate(JSONObject creds){
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/login", creds,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d(TAG, "Response is: " + response.toString());
+
+                        Intent intent = new Intent();
+                        try {
+                            intent.putExtra("jwt_token", response.getString("token"));
+                            intent.putExtra("result_code", 0);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                         onLoginSuccess();
-                        // onLoginFailed();
-                        progressDialog.dismiss();
                     }
-                }, 3000);
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("Error", "That didn't work!" + error.toString());
+                        onLoginFailed();
+                    }
+                });
+
+        RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
 
 
@@ -158,5 +181,9 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         return valid;
+    }
+
+    public static String getHost() {
+        return (Build.PRODUCT).contains("sdk") ? HOST_EMULATOR : BuildConfig.HOST;
     }
 }

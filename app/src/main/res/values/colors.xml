@@ -10,4 +10,5 @@
     <color name="colorTopBottomBar">#14181c</color>
     <color name="colorBackground">#161925</color>
     <color name="textColorDefault">#e5e5e5</color>
+    <color name="spotifyGreen">#1db954</color>
 </resources>
