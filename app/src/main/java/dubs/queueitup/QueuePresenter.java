@@ -56,12 +56,22 @@ public class QueuePresenter implements Search.ActionListener {
 
     public void addQueueItem(final String id) {
         if(spotifyApi == null){
-            init(RequestSingleton.getSpotify_auth_token());
-        }
-        mSpotifyApi = spotifyApi.getService();
+            if(RequestSingleton.getSpotify_auth_token() == null){
+                logError("HOLY SHIT ITS EMPTY");
+            } else {
+                init(RequestSingleton.getSpotify_auth_token());
+                mSpotifyApi = spotifyApi.getService();
 
-        LoadTrackTask task = new LoadTrackTask();
-        task.execute(id);
+                LoadTrackTask task = new LoadTrackTask();
+                task.execute(id);
+            }
+
+        } else {
+            mSpotifyApi = spotifyApi.getService();
+
+            LoadTrackTask task = new LoadTrackTask();
+            task.execute(id);
+        }
     }
 
     public Track removeQueueItem(final int position){

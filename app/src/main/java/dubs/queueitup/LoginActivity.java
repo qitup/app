@@ -139,6 +139,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         } else if(requestCode == REQUEST_SPOTIFY){
             RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
+            setResult(RESULT_OK, data);
             this.finish();
         }
     }
