@@ -76,7 +76,7 @@ public class SearchPage extends Fragment implements Search.View{
 //        text.addTextChangedListener(this);
 //
         mActionListener = new SearchPresenter(getActivity(), this);
-        mActionListener.init(RequestSingleton.getSpotify_auth_token());
+//        mActionListener.init(RequestSingleton.getSpotify_auth_token());
 
         // Setup search field
         final SearchView searchView = v.findViewById(R.id.search_view);
@@ -84,6 +84,7 @@ public class SearchPage extends Fragment implements Search.View{
             @Override
             public boolean onQueryTextSubmit(String query) {
                 if(PartySingleton.getInstance(getActivity()).inParty()){
+                    mActionListener.init(RequestSingleton.getSpotify_auth_token());
                     mActionListener.search(query);
                     searchView.clearFocus();
                     return true;
