@@ -272,11 +272,11 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             if (requestCode == REQUEST_CODE_LOGIN) {
                 if (resultCode == RESULT_OK) {
                     RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
-                    RequestSingleton.setSpotify_auth_token(data.getStringExtra("access_token"));
+                    getSpotifyToken();
                 }
             } else if(requestCode == REQUEST_CODE_LOGIN_CREATE){
                 RequestSingleton.setJWT_token(data.getStringExtra("jwt_token"));
-                RequestSingleton.setSpotify_auth_token(data.getStringExtra("access_token"));
+                getSpotifyToken();
                 intent = new Intent(this, CreateParty.class);
                 startActivityForResult(intent, REQUEST_CODE_CREATE);
 
@@ -351,6 +351,41 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             final String id = parts[parts.length - 1];
             mPresenter.addQueueItem(id);
         }
+    }
+
+    public void getSpotifyToken(){
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/spotify/token", null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("Main", "Response is: " + response.toString());
+
+                        RequestSingleton.setSpotify_auth_token(response.toString());
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.wtf("Error", error.toString());
+                        if (error.networkResponse.statusCode == 400) {
+                            Toast.makeText(getApplicationContext(), "Party not found", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Error", "That didn't work!" + error.toString());
+                        }
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+
+                return params;
+            }
+        };
+
+
+        RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
 
     private PartySocket newPartySocket(URI uri) {
