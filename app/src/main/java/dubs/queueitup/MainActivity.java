@@ -478,9 +478,11 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         for (int i = 0; i < users.length(); i++){
             JSONObject guest = null;
             try {
+
                 guest = users.getJSONObject(i).getJSONObject("user");
                 User user = new User(guest.getString("id"), guest.get("name").toString(), guest.get("avatar_url").toString());
                 attendees.add(i, user);
+                Log.d("Attendee Change", guest.get("name").toString());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
