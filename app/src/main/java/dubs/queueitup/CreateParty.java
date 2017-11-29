@@ -51,10 +51,12 @@ public class CreateParty extends AppCompatActivity {
         Log.d("CreateParty", _time_out.getText().toString());
 
         JSONObject party_info = new JSONObject();
+        JSONObject settings = new JSONObject();
         try {
             party_info.put("name", _party_name.getText().toString());
             party_info.put("join_code", _party_code.getText().toString());
-            party_info.put("timeout", _time_out.getText().toString());
+            settings.put("timeout", _time_out.getText().toString());
+            party_info.put("settings", settings);
         } catch (JSONException e) {
             e.printStackTrace();
         }

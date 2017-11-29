@@ -487,8 +487,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
         }
+        currentParty.setAttendees(attendees);
     }
 
     public static String getHost() {
@@ -1049,8 +1049,12 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
 
-    public void leaveRequest(){
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, baseURL + "/party/leave/?id=" + currentParty.getID(), null,
+    public void leaveRequest(String transferTo){
+        String requestURL = baseURL + "/party/leave/?id=" + currentParty.getID();
+        if(transferTo != null){
+            requestURL = requestURL + "&transfer_to="+transferTo;
+        }
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestURL, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -1102,10 +1106,10 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             e.printStackTrace();
         }
 
-        List<User> users = currentParty.getAttendees();
+        final List<User> users = currentParty.getAttendees();
 
         if(!user_id.equals(currentParty.getHost().getId()) || users.size() == 0) {
-            leaveRequest();
+            leaveRequest(null);
         } else {
             List<String> names = new ArrayList<>();
                         AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
@@ -1128,15 +1132,15 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
             builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    String strName = arrayAdapter.getItem(which);
+                public void onClick(DialogInterface dialog, final int which) {
+                    final String strName = arrayAdapter.getItem(which);
                     AlertDialog.Builder builderInner = new AlertDialog.Builder(MainActivity.this);
                     builderInner.setMessage(strName);
                     builderInner.setTitle("Transfer permissions to this user?");
                     builderInner.setPositiveButton("Transfer", new DialogInterface.OnClickListener() {
                         @Override
-                        public void onClick(DialogInterface dialog,int which) {
-                            leaveRequest();
+                        public void onClick(DialogInterface dialog,int which2) {
+                            leaveRequest(users.get(which).getId());
                             dialog.dismiss();
                         }
                     });
