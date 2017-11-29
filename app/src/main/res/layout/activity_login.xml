@@ -26,12 +26,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="8dp"
+            android:focusedByDefault="false">
 
             <EditText
                 android:id="@+id/input_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:focusedByDefault="false"
                 android:hint="Email"
                 android:inputType="textEmailAddress" />
         </android.support.design.widget.TextInputLayout>
@@ -41,12 +43,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="8dp"
+            android:focusedByDefault="false">
 
             <EditText
                 android:id="@+id/input_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:focusedByDefault="false"
                 android:hint="Password"
                 android:inputType="textPassword"
                 android:textColor="@color/textColorDefault"
