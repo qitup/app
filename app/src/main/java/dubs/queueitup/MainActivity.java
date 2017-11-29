@@ -179,13 +179,16 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public boolean tokenExpired(){
+        long expiry;
         try {
-            long expiry = jwt_token.getInt("exp") * 1000;
+            expiry = jwt_token.getInt("exp") * 1000;
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-//        if(LocalDateTime.now() > )
+        if(System.currentTimeMillis() > expiry){
+
+        }
         return false;
     }
 
