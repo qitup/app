@@ -74,7 +74,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:hint="Timeout (minutes)"
-            android:inputType="time"
+            android:inputType="number"
             android:textColor="@color/textColorDefault"
             android:textColorHint="@color/tabTextColor" />
     </android.support.design.widget.TextInputLayout>

@@ -138,16 +138,6 @@ public class SearchPage extends Fragment implements Search.View{
     }
 
     @Override
-    public void addPlaying(List<Track> items) {
-
-    }
-
-    @Override
-    public void removeItem(int position) {
-
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
         mActionListener.pause();

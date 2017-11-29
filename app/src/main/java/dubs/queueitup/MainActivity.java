@@ -65,6 +65,7 @@ import java.util.Objects;
 import dubs.queueitup.Models.Party;
 import dubs.queueitup.Models.QItem;
 import dubs.queueitup.Models.Queue;
+import dubs.queueitup.Models.TrackItem;
 import dubs.queueitup.Models.User;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.models.Track;
@@ -280,10 +281,10 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
 
                     Bundle buns = data.getExtras();
-                    Party party = (Party) buns.getParcelable("party_details");
+                    currentParty = (Party) buns.getParcelable("party_details");
 
                     Bundle args = createFragmentBundle();
-                    args.putParcelable("party", party);
+                    args.putParcelable("party", currentParty);
 
                     try {
                         pagerAdapter.swapFragmentAt(createFragment(3, args), 0);
@@ -337,13 +338,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     public void refreshQueue(){
         Queue queue = currentParty.getQueue();
         List<QItem> items = queue.getQueue_items();
-
-        for (int i = 0; i < items.size(); i++) {
-            String uri = items.get(i).getUri();
-            String[] parts = uri.split(":");
-            final String id = parts[parts.length - 1];
-            mPresenter.addQueueItem(id);
-        }
+        List<TrackItem> tracks = convertItems(items);
+        mPresenter.addQueueItem(tracks);
     }
 
     public void getSpotifyToken(){
@@ -471,32 +467,33 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Queue queue = currentParty.getQueue();
 
         List<QItem> items = queue.getQueue_items();
+        List<TrackItem> tItems = convertItems(items);
         for (int i = 0; i < tracks.length(); i++){
             try {
-                if(i < items.size()){
-                    if(items.get(i).getUri() != tracks.getJSONObject(i).get("uri")){
-                        items.remove(i);
+                if(i < tItems.size()){
+
+                    if((tItems.get(i)).getUri() != tracks.getJSONObject(i).get("uri")){
+                        tItems.remove(i);
                         mPresenter.removeQueueItem(i);
                         i--;
                     }
                 } else {
                     items.add(i,
-                        new QItem(
+                        new TrackItem(
                             tracks.getJSONObject(i).get("type").toString(),
                             tracks.getJSONObject(i).get("added_by").toString(),
                             tracks.getJSONObject(i).get("added_at").toString(),
+                            tracks.getJSONObject(i).getJSONObject("state").getBoolean("playing"),
                             tracks.getJSONObject(i).get("uri").toString())
                     );
-                    String uri = items.get(i).getUri();
-                    String[] parts = uri.split(":");
-                    final String id = parts[parts.length - 1];
-                    mPresenter.addQueueItem(id);
+
                 }
 
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+        mPresenter.addQueueItem(tItems);
     }
 
     public void updateAttendees(JSONArray users){
@@ -613,7 +610,13 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         return canHost;
     }
 
-
+    public List<TrackItem> convertItems(List<QItem> items){
+        List<TrackItem> tracks = new ArrayList<>();
+        for (int i = 0; i < items.size(); i++){
+            tracks.add(i, (TrackItem)items.get(i));
+        }
+        return tracks;
+    }
 
     @Override
     public void addTrack(Track track) {
@@ -1010,13 +1013,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public void setNowPlaying(int position) {
-        Track item = mPresenter.removeQueueItem(position);
+        TrackItem item = mPresenter.removeQueueItem(position);
 
-        String uri = item.uri;
-        String[] parts = uri.split(":");
-        final String id = parts[parts.length - 1];
-
-        mPresenter.addPlaying(id);
+        mPresenter.addPlaying(item);
     }
 
     @Override

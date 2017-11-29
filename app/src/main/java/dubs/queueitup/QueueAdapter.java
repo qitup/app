@@ -14,6 +14,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
+import dubs.queueitup.Models.TrackItem;
 import kaaes.spotify.webapi.android.models.ArtistSimple;
 import kaaes.spotify.webapi.android.models.Image;
 import kaaes.spotify.webapi.android.models.Track;
@@ -24,7 +25,7 @@ import kaaes.spotify.webapi.android.models.Track;
 
 public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> {
 
-    private final List<Track> mItems = new ArrayList<>();
+    private final List<TrackItem> mItems = new ArrayList<>();
     private final Context mContext;
     private final ItemVotedListener mListener;
 
@@ -50,7 +51,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
     }
 
     public interface ItemVotedListener {
-        void onItemVoted(View itemView, Track item, int position);
+        void onItemVoted(View itemView, TrackItem item, int position);
     }
 
     public QueueAdapter(Context context, ItemVotedListener listener) {
@@ -62,7 +63,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
         mItems.clear();
     }
 
-    public void addData(List<Track> items) {
+    public void addData(List<TrackItem> items) {
         mItems.addAll(items);
         notifyDataSetChanged();
     }
@@ -72,11 +73,11 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
         notifyDataSetChanged();
     }
 
-    public Track getItem(int position){
+    public TrackItem getItem(int position){
         return mItems.get(position);
     }
 
-    public void addPlaying(List<Track> items) {
+    public void addPlaying(List<TrackItem> items) {
         mItems.clear();
         mItems.addAll(items);
         notifyDataSetChanged();
@@ -91,7 +92,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Track item = mItems.get(position);
+        Track item = mItems.get(position).getTrack();
 
         holder.title.setText(item.name);
 

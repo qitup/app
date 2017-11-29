@@ -87,7 +87,7 @@ public class JoinParty extends AppCompatActivity {
                             List<QItem> array = new ArrayList<QItem>();
                             for (int i = 0; i < items.length(); i++){
                                 JSONObject item = items.getJSONObject(i);
-                                QItem q_item = new QItem(item.get("type").toString(), item.get("added_by").toString(), item.get("added_at").toString(), item.get("uri").toString());
+                                QItem q_item = new QItem(item.get("type").toString(), item.get("added_by").toString(), item.get("added_at").toString(), item.getJSONObject("state").getBoolean("playing"));
                                 array.add(i, q_item);
                             }
                             Queue queue = new Queue(array);

@@ -11,20 +11,21 @@ public class QItem implements Parcelable{
     private String type;
     private String addedBy;
     private String addedAt;
-    private String uri;
+    private boolean isPlaying;
+
 
     protected QItem(Parcel in) {
         type = in.readString();
         addedBy = in.readString();
         addedAt = in.readString();
-        uri = in.readString();
+        isPlaying = in.readInt() != 0;
     }
 
-    public QItem(String Type, String addBy, String addAt, String id){
+    public QItem(String Type, String addBy, String addAt, boolean playing){
         type = Type;
         addedBy = addBy;
         addedAt = addAt;
-        uri = id;
+        isPlaying = playing;
     }
 
     public static final Parcelable.Creator<QItem> CREATOR = new Parcelable.Creator<QItem>() {
@@ -52,8 +53,8 @@ public class QItem implements Parcelable{
         return addedBy;
     }
 
-    public String getUri(){
-        return uri;
+    public boolean isPlaying(){
+        return isPlaying;
     }
 
     @Override
@@ -66,6 +67,6 @@ public class QItem implements Parcelable{
         dest.writeString(type);
         dest.writeString(addedAt);
         dest.writeString(addedBy);
-        dest.writeString(uri);
+        dest.writeInt(isPlaying ? 1 : 0);
     }
 }
