@@ -116,9 +116,9 @@ public class SpotifyLoginActivity extends AppCompatActivity {
         });
         String jwt_token = getIntent().getStringExtra("jwt_token");
         if(jwt_token != null){
-            Map<String, String> headers = new HashMap<>();
-            headers.put("Authorization", "Bearer "+jwt_token);
-            mWebview.loadUrl(url, headers);
+            String cookieString = "Authorization" + "=" + jwt_token + "; Domain=" + getHost();
+            cookieManager.setCookie(getHost(), cookieString);
+            Log.d("CookieUrl",cookieString + " ");
         } else {
             mWebview.loadUrl(url);
         }
