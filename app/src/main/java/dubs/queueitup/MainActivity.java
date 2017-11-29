@@ -433,12 +433,33 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                 return;
                             }
                             updateAttendees(res);
+                            break;
+                        case "host.promotion":
+                            JSONObject host;
+
+                            try {
+                                host = response.getJSONObject("host");
+                            } catch (JSONException e){
+                                e.printStackTrace();
+                                return;
+                            }
+                            notifyAndTransfer(host);
+                            break;
 
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
+        };
+    }
+
+    public void notifyAndTransfer(JSONObject host){
+        Toast.makeText(this, "You are now the host of the party!", Toast.LENGTH_SHORT).show();
+        try {
+            currentParty.setHost(new User(host.getString("id"), host.getString("name"), host.get("avatar_url").toString()));
+        } catch (JSONException e) {
+            e.printStackTrace();
         };
     }
 
@@ -1113,7 +1134,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         } else {
             List<String> names = new ArrayList<>();
                         AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
-            builderSingle.setIcon(R.drawable.ic_home_black_24dp);
+            builderSingle.setIcon(R.drawable.ic_reorder_white_48dp);
             builderSingle.setTitle("Transfer Host Permissions:");
 
             final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_singlechoice);

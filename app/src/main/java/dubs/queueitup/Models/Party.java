@@ -67,6 +67,10 @@ public class Party implements Parcelable{
         return host;
     }
 
+    public void setHost(User newHost){
+        this.host = newHost;
+    }
+
     public String getID(){
         return id;
     }
