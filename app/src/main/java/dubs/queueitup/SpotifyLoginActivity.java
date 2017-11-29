@@ -117,6 +117,7 @@ public class SpotifyLoginActivity extends AppCompatActivity {
         String jwt_token = getIntent().getStringExtra("jwt_token");
         if(jwt_token != null){
             String cookieString = "Authorization" + "=" + jwt_token + "; Domain=" + getHost();
+            cookieManager.setAcceptCookie(true);
             cookieManager.setCookie(getHost(), cookieString);
             Log.d("CookieUrl",cookieString + " ");
         }
