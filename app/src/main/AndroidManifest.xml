@@ -36,6 +36,7 @@
         <activity android:name=".RequestSingleton" />
         <activity android:name=".LoginActivity" />
         <activity android:name=".SpotifyLoginActivity" />
+        <activity android:name=".SignupActivity" />
         <activity
             android:label="@string/join_party"
             android:name=".JoinParty"
