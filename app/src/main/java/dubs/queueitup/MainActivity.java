@@ -455,7 +455,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public void notifyAndTransfer(JSONObject host){
-        Toast.makeText(this, "You are now the host of the party!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "You are now the host of the party!", Toast.LENGTH_SHORT).show();
         try {
             currentParty.setHost(new User(host.getString("id"), host.getString("name"), host.get("avatar_url").toString()));
         } catch (JSONException e) {
