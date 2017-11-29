@@ -11,7 +11,7 @@
     tools:layout_editor_absoluteY="25dp">
 
     <android.support.design.widget.AppBarLayout
-        android:layout_width="match_parent"
+        android:layout_width="584dp"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay"
         tools:layout_editor_absoluteY="0dp"
@@ -67,6 +67,6 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.5"
         tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="329dp" />
+        tools:layout_editor_absoluteY="444dp" />
 
 </android.support.constraint.ConstraintLayout>
