@@ -359,7 +359,11 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         // Display the first 500 characters of the response string.
                         Log.d("Main", "Response is: " + response.toString());
 
-                        RequestSingleton.setSpotify_auth_token(response.toString());
+                        try {
+                            RequestSingleton.setSpotify_auth_token(response.getString("access_token"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 },
                 new Response.ErrorListener() {
