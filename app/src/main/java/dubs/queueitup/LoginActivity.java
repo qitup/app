@@ -112,7 +112,7 @@ public class LoginActivity extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        onLoginSuccess();
+                        onLoginSuccess(intent);
                     }
                 },
                 new Response.ErrorListener() {
@@ -150,8 +150,9 @@ public class LoginActivity extends AppCompatActivity {
         moveTaskToBack(true);
     }
 
-    public void onLoginSuccess() {
+    public void onLoginSuccess(Intent intent) {
         _loginButton.setEnabled(true);
+        setResult(RESULT_OK, intent);
         finish();
     }
 

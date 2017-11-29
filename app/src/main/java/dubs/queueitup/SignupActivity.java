@@ -99,7 +99,7 @@ public class SignupActivity extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        onSignupSuccess();
+                        onSignupSuccess(intent);
                     }
                 },
                 new Response.ErrorListener() {
@@ -124,9 +124,9 @@ public class SignupActivity extends AppCompatActivity {
     }
 
 
-    public void onSignupSuccess() {
+    public void onSignupSuccess(Intent intent) {
         _signupButton.setEnabled(true);
-        setResult(RESULT_OK, null);
+        setResult(RESULT_OK, intent);
         finish();
     }
 
