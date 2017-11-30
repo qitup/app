@@ -486,17 +486,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                             });
                             break;
                         case "player.play":
-                            JSONObject Queue;
-                            final JSONArray Tracks;
-
-                            try {
-                                Queue = response.getJSONObject("queue");
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                                return;
-                            }
-                            Tracks = Queue.getJSONArray("items");
-
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -574,13 +563,15 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Map<Integer, TrackItem> toAdd = new HashMap<>();
         for (int i = 0; i < tracks.length(); i++){
             try {
+                Log.d("UPDATE:", tracks.getJSONObject(i).get("uri").toString());
+                Log.d("UPDATE:", tracks.getJSONObject(i).getJSONObject("state").get("playing").toString());
                 if(i < tItems.size()){
                     if((tItems.get(i)).getUri() != tracks.getJSONObject(i).get("uri")){
                         tItems.remove(i);
                         toAdd.put(i, null);
                         i--;
                     } else if (tracks.getJSONObject(i).getJSONObject("state").getBoolean("playing")){
-                        tItems.get(i).setPlaying(true);
+//                        tItems.get(i).setPlaying(true);
                         toAdd.put(-2, tItems.get(i));
                     }
                 } else {
