@@ -463,7 +463,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                 public void run() {
                                     ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.pause);
                                     PlayerSingleton.getInstance(getApplicationContext()).setPlaying(1);
-                                    Toast.makeText(getApplicationContext(), "Player interruption", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "Queue Played", Toast.LENGTH_SHORT).show();
                                 }
                             });
                             break;
@@ -473,7 +473,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                 public void run() {
                                     ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.play_button);
                                     PlayerSingleton.getInstance(getApplicationContext()).setPlaying(0);
-                                    Toast.makeText(getApplicationContext(), "Player interruption", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "Player paused", Toast.LENGTH_SHORT).show();
                                 }
                             });
                             break;
@@ -522,7 +522,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 e.printStackTrace();
             }
         }
-        queue.setQueue_items(tItems);
+        currentParty.getQueue().setQueue_items(tItems);
         refreshQueue();
         if(nowPlaying != null){
             mPresenter.addPlaying(nowPlaying);
