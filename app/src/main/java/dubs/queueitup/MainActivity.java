@@ -486,12 +486,34 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                             });
                             break;
                         case "player.play":
+                            JSONObject queue;
+                            final JSONArray Tracks;
+
+                            try {
+                                queue = response.getJSONObject("queue");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                return;
+                            }
+                            Tracks = queue.getJSONArray("items");
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateQueue(Tracks);
+                                    ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.pause);
+                                    PlayerSingleton.getInstance(getApplicationContext()).setPlaying(1);
+                                    Toast.makeText(getApplicationContext(), "Queue Played", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            break;
+                        case "player.resume":
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.pause);
                                     PlayerSingleton.getInstance(getApplicationContext()).setPlaying(1);
-                                    Toast.makeText(getApplicationContext(), "Queue Played", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "Queue Resumed", Toast.LENGTH_SHORT).show();
                                 }
                             });
                             break;
@@ -501,7 +523,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                 public void run() {
                                     ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.play_button);
                                     PlayerSingleton.getInstance(getApplicationContext()).setPlaying(0);
-                                    Toast.makeText(getApplicationContext(), "Player paused", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "Queue paused", Toast.LENGTH_SHORT).show();
                                 }
                             });
                             break;
