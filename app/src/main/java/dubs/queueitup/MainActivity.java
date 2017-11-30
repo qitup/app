@@ -339,6 +339,11 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     public void refreshQueue(){
         Queue queue = currentParty.getQueue();
         List<TrackItem> items = queue.getQueue_items();
+        for (int i = 0; i < items.size(); i++){
+            if(items.get(i).isPlaying()){
+                mPresenter.addPlaying(items.get(i));
+            }
+        }
         mPresenter.clearData();
         mPresenter.addQueueItem(items);
     }
@@ -500,7 +505,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         TrackItem nowPlaying = null;
         for (int i = 0; i < tracks.length(); i++){
             try {
-
                 if(i < tItems.size()){
                     if((tItems.get(i)).getUri() != tracks.getJSONObject(i).get("uri")){
                         tItems.remove(i);
@@ -514,9 +518,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         tracks.getJSONObject(i).getJSONObject("state").getBoolean("playing"),
                         tracks.getJSONObject(i).get("uri").toString());
                     tItems.add(i, track);
-                    if(track.isPlaying()){
-                        nowPlaying = track;
-                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -524,9 +525,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         }
         currentParty.getQueue().setQueue_items(tItems);
         refreshQueue();
-        if(nowPlaying != null){
-            mPresenter.addPlaying(nowPlaying);
-        }
     }
 
     public void updateAttendees(JSONArray users){
