@@ -66,11 +66,11 @@ public class QueuePage extends Fragment implements Queue.View {
             @Override
             public void onClick(View v) {
                 if(PartySingleton.getInstance(getActivity()).inParty()) {
-                    if (PlayerSingleton.getInstance(getActivity()).isPlaying() == 1) {
-                        mediaButton.setImageResource(R.drawable.play_button);
-                    } else {
-                        mediaButton.setImageResource(R.drawable.pause);
-                    }
+//                    if (PlayerSingleton.getInstance(getActivity()).isPlaying() == 1) {
+//                        mediaButton.setImageResource(R.drawable.play_button);
+//                    } else {
+//                        mediaButton.setImageResource(R.drawable.pause);
+//                    }
                     cListener.onMediaAction(mediaButton);
                 }
             }

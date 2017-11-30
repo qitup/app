@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -447,6 +448,15 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                 }
                             });
                             break;
+                        case "player.interrupted":
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+//                                    notifyInterruption();
+                                    Toast.makeText(getApplicationContext(), "You are now the host of the party!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            break;
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -484,9 +494,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                             tracks.getJSONObject(i).getJSONObject("state").getBoolean("playing"),
                             tracks.getJSONObject(i).get("uri").toString())
                     );
-
                 }
-
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -612,6 +620,20 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             e.printStackTrace();
         }
         return canHost;
+    }
+
+    public boolean isUserHost(){
+        String token = RequestSingleton.getJWT_token();
+        JSONObject claim = null;
+        String userID = null;
+        try {
+            claim = new JSONObject(JWTUtils.decoded(token));
+            userID = claim.getString("sub");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        assert userID != null;
+        return userID.equals(currentParty.getHost().getId());
     }
 
     public List<TrackItem> convertItems(List<QItem> items){
@@ -1027,19 +1049,21 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
     @Override
     public void onMediaAction(View v) {
-        if (currentParty != null) {
+        if (isUserHost() && currentParty != null) {
             if (PlayerSingleton.getInstance(this).isEmpty()) {
                 makePlayerRequest("play");
+                ((ImageButton)v).setImageResource(R.drawable.play_button);
                 PlayerSingleton.getInstance(this).setPlaying(1);
                 setNowPlaying(0);
             } else {
                 if (PlayerSingleton.getInstance(this).isPlaying() == 1) {
                     makePlayerRequest("pause");
-    //                v.setBackgroundResource(R.drawable.play_button);
                     PlayerSingleton.getInstance(this).setPlaying(0);
+                    ((ImageButton)v).setImageResource(R.drawable.pause);
                 } else {
                     makePlayerRequest("play");
                     PlayerSingleton.getInstance(this).setPlaying(1);
+                    ((ImageButton)v).setImageResource(R.drawable.play_button);
                 }
             }
         }
