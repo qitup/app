@@ -82,7 +82,16 @@ public class QueuePresenter {
         TrackItem item = mView.getItem(position);
         mView.removeItem(position);
         return item;
+    }
 
+    public void clearData(){
+        mView.clearData();
+    }
+
+    public TrackItem setPlaying(final int position){
+        TrackItem item = mView.getItem(position);
+        mView.setPlaying(position);
+        return item;
     }
 
     public void addPlaying(TrackItem item){
@@ -113,7 +122,8 @@ public class QueuePresenter {
         @Override
         protected Track doInBackground(TrackItem... items) {
             item = items[0];
-            return  mSpotifyApi.getTrack(items[0].getUri());
+            String id = item.getUri().split(":")[2];
+            return  mSpotifyApi.getTrack(id);
         }
 
         @Override
@@ -132,7 +142,9 @@ public class QueuePresenter {
 
         @Override
         protected Track doInBackground(TrackItem... items) {
-            return mSpotifyApi.getTrack(items[0].getUri());
+            item = items[0];
+            String id = item.getUri().split(":")[2];
+            return mSpotifyApi.getTrack(id);
         }
 
         @Override

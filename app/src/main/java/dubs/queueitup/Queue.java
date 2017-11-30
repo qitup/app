@@ -21,5 +21,9 @@ public class Queue {
         void addPlaying(List<TrackItem> items);
 
         void removeItem(int position);
+
+        void setPlaying(int position);
+
+        void clearData();
     }
 }

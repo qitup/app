@@ -125,12 +125,23 @@ public class QueuePage extends Fragment implements Queue.View {
     }
 
     @Override
+    public void clearData(){
+        mAdapter.clearData();
+        npAdapter.clearData();
+    }
+
+    @Override
     public void removeItem(int position){
         mAdapter.removeItem(position);
     }
 
     public TrackItem getItem(int position){
         return mAdapter.getItem(position);
+    }
+
+    @Override
+    public void setPlaying(int position){
+        mAdapter.setPlaying(position);
     }
 
     @Override

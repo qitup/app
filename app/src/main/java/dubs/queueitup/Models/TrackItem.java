@@ -1,6 +1,7 @@
 package dubs.queueitup.Models;
 
 import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.Map;
 
@@ -25,6 +26,23 @@ public class TrackItem extends QItem {
         super(Type, addBy, addAt, playing);
         this.uri = uri;
     }
+
+    public TrackItem(QItem item){
+        super(item.getType(), item.getAddedBy(), item.getAddedAt(), item.isPlaying());
+    }
+
+    public static final Parcelable.Creator<TrackItem> CREATOR = new Parcelable.Creator<TrackItem>() {
+        @Override
+        public TrackItem createFromParcel(Parcel in) {
+            return new TrackItem(in);
+        }
+
+        @Override
+        public TrackItem[] newArray(int size) {
+            return new TrackItem[size];
+        }
+    };
+
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {

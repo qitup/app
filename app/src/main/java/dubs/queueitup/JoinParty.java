@@ -18,6 +18,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.spotify.sdk.android.player.Metadata;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,6 +35,7 @@ import java.util.Map;
 import dubs.queueitup.Models.Party;
 import dubs.queueitup.Models.QItem;
 import dubs.queueitup.Models.Queue;
+import dubs.queueitup.Models.TrackItem;
 import dubs.queueitup.Models.User;
 
 
@@ -84,11 +86,14 @@ public class JoinParty extends AppCompatActivity {
 
                             JSONObject result = response.getJSONObject("queue");
                             JSONArray items = result.getJSONArray("items");
-                            List<QItem> array = new ArrayList<QItem>();
+                            List<TrackItem> array = new ArrayList<TrackItem>();
                             for (int i = 0; i < items.length(); i++){
                                 JSONObject item = items.getJSONObject(i);
-                                QItem q_item = new QItem(item.get("type").toString(), item.get("added_by").toString(), item.get("added_at").toString(), item.getJSONObject("state").getBoolean("playing"));
-                                array.add(i, q_item);
+                                if(item.get("type").toString().equals("spotify_track")){
+                                    TrackItem q_item = new TrackItem(item.get("type").toString(), item.get("added_by").toString(), item.get("added_at").toString(), item.getJSONObject("state").getBoolean("playing"), item.get("uri").toString());
+                                    Log.d("JoinParty", item.get("uri").toString());
+                                    array.add(i, q_item);
+                                }
                             }
                             Queue queue = new Queue(array);
                             intent.putExtra("party_details", new Party(name, join_code, host_user, party_id, users, queue));

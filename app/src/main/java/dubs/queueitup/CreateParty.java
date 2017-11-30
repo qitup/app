@@ -76,7 +76,7 @@ public class CreateParty extends AppCompatActivity {
                             String id = response.getJSONObject("party").getString("id");
                           JSONObject host = response.getJSONObject("party").getJSONObject("host");
                             User host_user = new User(host.getString("id"), host.getString("name"), host.get("avatar_url").toString());
-                            intent.putExtra("party_details", new Party(name, join_code, host_user, id, null, new Queue(new ArrayList<QItem>())));
+                            intent.putExtra("party_details", new Party(name, join_code, host_user, id, null, new Queue(new ArrayList<TrackItem>())));
                             intent.putExtra("socket_url", response.get("url").toString());
 
                         } catch (JSONException e) {

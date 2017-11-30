@@ -337,9 +337,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
     public void refreshQueue(){
         Queue queue = currentParty.getQueue();
-        List<QItem> items = queue.getQueue_items();
-        List<TrackItem> tracks = convertItems(items);
-        mPresenter.addQueueItem(tracks);
+        List<TrackItem> items = queue.getQueue_items();
+//        List<TrackItem> tracks = convertItems(items);
+        mPresenter.addQueueItem(items);
     }
 
     public void getSpotifyToken(){
@@ -466,18 +466,17 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     public void updateQueue(JSONArray tracks){
         Queue queue = currentParty.getQueue();
 
-        List<QItem> items = queue.getQueue_items();
-        List<TrackItem> tItems = convertItems(items);
+//        List<QItem> items = queue.getQueue_items();
+        List<TrackItem> tItems = queue.getQueue_items();
         for (int i = 0; i < tracks.length(); i++){
             try {
                 if(i < tItems.size()){
                     if((tItems.get(i)).getUri() != tracks.getJSONObject(i).get("uri")){
                         tItems.remove(i);
-                        mPresenter.removeQueueItem(i);
                         i--;
                     }
                 } else {
-                    items.add(i,
+                    tItems.add(i,
                         new TrackItem(
                             tracks.getJSONObject(i).get("type").toString(),
                             tracks.getJSONObject(i).get("added_by").toString(),
@@ -492,7 +491,13 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 e.printStackTrace();
             }
         }
+        mPresenter.clearData();
         mPresenter.addQueueItem(tItems);
+        for (int i = 0; i < tItems.size(); i++){
+            if(tItems.get(i).isPlaying()){
+                mPresenter.addPlaying(tItems.get(i));
+            }
+        }
     }
 
     public void updateAttendees(JSONArray users){
@@ -612,7 +617,10 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     public List<TrackItem> convertItems(List<QItem> items){
         List<TrackItem> tracks = new ArrayList<>();
         for (int i = 0; i < items.size(); i++){
-            tracks.add(i, (TrackItem)items.get(i));
+            QItem item = items.get(i);
+            if(item instanceof TrackItem){
+                tracks.add(i, (TrackItem)item);
+            }
         }
         return tracks;
     }

@@ -68,6 +68,10 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewHolder> 
         notifyDataSetChanged();
     }
 
+    public void setPlaying(int position){
+        mItems.get(position).setPlaying(true);
+    }
+
     public void removeItem(int position){
         mItems.remove(position);
         notifyDataSetChanged();
