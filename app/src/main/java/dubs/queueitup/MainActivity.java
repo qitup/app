@@ -502,7 +502,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Queue queue = currentParty.getQueue();
 
         List<TrackItem> tItems = queue.getQueue_items();
-        TrackItem nowPlaying = null;
+        List<TrackItem> toAdd = new ArrayList<>();
         for (int i = 0; i < tracks.length(); i++){
             try {
                 if(i < tItems.size()){
@@ -856,6 +856,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public void leaveRequest(String transferTo){
+
         String requestURL = baseURL + "/party/leave/?id=" + currentParty.getID();
         if(transferTo != null){
             requestURL = requestURL + "&transfer_to="+transferTo;
@@ -866,6 +867,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
                         Log.d("Main", "Response is: " + response.toString());
+
+                        PartySingleton.getInstance(getApplicationContext()).getSocket().close();
 
                         try {
                             pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
@@ -894,7 +897,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 return params;
             }
         };
-
 
         RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
