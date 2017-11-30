@@ -496,16 +496,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                 }
                             });
                             break;
-                        case "player.resume":
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.pause);
-                                    PlayerSingleton.getInstance(getApplicationContext()).setPlaying(1);
-                                    Toast.makeText(getApplicationContext(), "Queue Resumed", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                            break;
                         case "player.pause":
                             runOnUiThread(new Runnable() {
                                 @Override
@@ -560,22 +550,17 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Queue queue = currentParty.getQueue();
 
         List<TrackItem> tItems = queue.getQueue_items();
-        Map<Integer, TrackItem> toAdd = new HashMap<>();
         for (int i = 0; i < tracks.length(); i++){
             try {
-                Log.d("UPDATE:", tracks.getJSONObject(i).get("uri").toString());
-                Log.d("UPDATE:", tracks.getJSONObject(i).getJSONObject("state").get("playing").toString());
                 if(i < tItems.size()){
                     if((tItems.get(i)).getUri() != tracks.getJSONObject(i).get("uri")){
                         tItems.remove(i);
-                        toAdd.put(i, null);
                         i--;
-                    } else if (tracks.getJSONObject(i).getJSONObject("state").getBoolean("playing")){
-//                        tItems.get(i).setPlaying(true);
-                        toAdd.put(-2, tItems.get(i));
+                    } else {
+                        Log.d("UPDATE:", "QUEUE" + tracks.getJSONObject(i).get("uri").toString());
+                        Log.d("UPDATE:", "QUEUE" + tracks.getJSONObject(i).getJSONObject("state").get("playing").toString());
                     }
                 } else {
-
                     TrackItem track = new TrackItem(
                         tracks.getJSONObject(i).get("type").toString(),
                         tracks.getJSONObject(i).get("added_by").toString(),
@@ -584,12 +569,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         tracks.getJSONObject(i).get("uri").toString());
 
                     tItems.add(i, track);
-
-                    if(track.isPlaying()){
-                        toAdd.put(-1, track);
-                    } else {
-                        toAdd.put(i, track);
-                    }
+                    Log.d("UPDATE:", "QUEUE" + tracks.getJSONObject(i).get("uri").toString());
+                    Log.d("UPDATE:", "QUEUE" + tracks.getJSONObject(i).getJSONObject("state").get("playing").toString());
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
