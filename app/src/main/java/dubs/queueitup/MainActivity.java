@@ -457,7 +457,8 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-
+                                    ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.play_button);
+                                    PlayerSingleton.getInstance(getApplicationContext()).setPlaying(0);
                                     Toast.makeText(getApplicationContext(), "Player interruption", Toast.LENGTH_SHORT).show();
                                 }
                             });
@@ -869,6 +870,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         Log.d("Main", "Response is: " + response.toString());
 
                         PartySingleton.getInstance(getApplicationContext()).getSocket().close();
+                        currentParty = null;
 
                         try {
                             pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
