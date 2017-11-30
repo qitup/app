@@ -471,7 +471,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         for (int i = 0; i < tracks.length(); i++){
             try {
                 if(i < tItems.size()){
-
                     if((tItems.get(i)).getUri() != tracks.getJSONObject(i).get("uri")){
                         tItems.remove(i);
                         mPresenter.removeQueueItem(i);

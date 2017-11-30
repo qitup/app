@@ -65,6 +65,9 @@ public class SearchPresenter implements Search.ActionListener {
                     logError(error.getMessage());
                 }
             };
+            if(mSearchPager == null){
+                init(RequestSingleton.getSpotify_auth_token());
+            }
             mSearchPager.getFirstPage(searchQuery, PAGE_SIZE, mSearchListener);
         }
     }
