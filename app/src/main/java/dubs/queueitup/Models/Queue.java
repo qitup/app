@@ -16,14 +16,14 @@ import java.util.ListIterator;
 
 public class Queue implements Parcelable{
 
-    private List<QItem> queue_items;
+    private List<TrackItem> queue_items;
 
     protected Queue(Parcel in) {
         queue_items = new ArrayList<>();
-        in.readTypedList(queue_items, QItem.CREATOR);
+        in.readTypedList(queue_items, TrackItem.CREATOR);
     }
 
-    public Queue(List<QItem> list){
+    public Queue(List<TrackItem> list){
         queue_items = list;
     }
 
@@ -44,19 +44,23 @@ public class Queue implements Parcelable{
         return 0;
     }
 
-    public List<QItem> getQueue_items(){
+    public List<TrackItem> getQueue_items(){
         return queue_items;
+    }
+
+    public void setQueue_items(List<TrackItem> list){
+        queue_items = list;
     }
 
     public void removeItem(int position){
         queue_items.remove(position);
     }
 
-    public void addItem(QItem item){
+    public void addItem(TrackItem item){
         queue_items.add(queue_items.size(), item);
     }
 
-    public void addItemAt(QItem item, int position){
+    public void addItemAt(TrackItem item, int position){
         queue_items.add(position, item);
     }
 

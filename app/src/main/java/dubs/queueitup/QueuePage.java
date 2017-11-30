@@ -19,9 +19,10 @@ import android.widget.ImageButton;
 import java.util.ArrayList;
 import java.util.List;
 
+import dubs.queueitup.Models.TrackItem;
 import kaaes.spotify.webapi.android.models.Track;
 
-public class QueuePage extends Fragment implements Search.View {
+public class QueuePage extends Fragment implements Queue.View {
 
     QueueAdapter mAdapter;
     QueueAdapter npAdapter;
@@ -65,11 +66,11 @@ public class QueuePage extends Fragment implements Search.View {
             @Override
             public void onClick(View v) {
                 if(PartySingleton.getInstance(getActivity()).inParty()) {
-                    if (PlayerSingleton.getInstance(getActivity()).isPlaying() == 1) {
-                        mediaButton.setImageResource(R.drawable.play_button);
-                    } else {
-                        mediaButton.setImageResource(R.drawable.pause);
-                    }
+//                    if (PlayerSingleton.getInstance(getActivity()).isPlaying() == 1) {
+//                        mediaButton.setImageResource(R.drawable.play_button);
+//                    } else {
+//                        mediaButton.setImageResource(R.drawable.pause);
+//                    }
                     cListener.onMediaAction(mediaButton);
                 }
             }
@@ -77,14 +78,14 @@ public class QueuePage extends Fragment implements Search.View {
 
         mAdapter = new QueueAdapter(getActivity(), new QueueAdapter.ItemVotedListener(){
             @Override
-            public void onItemVoted(View itemView, Track item, int position) {
+            public void onItemVoted(View itemView, TrackItem item, int position) {
                 Log.d("QueuePage", "Vote submitted");
             }
         });
 
         npAdapter = new QueueAdapter(getActivity(), new QueueAdapter.ItemVotedListener(){
             @Override
-            public void onItemVoted(View itemView, Track item, int position) {
+            public void onItemVoted(View itemView, TrackItem item, int position) {
                 // Do nothing
             }
         });
@@ -109,7 +110,7 @@ public class QueuePage extends Fragment implements Search.View {
     }
 
     @Override
-    public void addPlaying(List<Track> items) {
+    public void addPlaying(List<TrackItem> items) {
         npAdapter.addPlaying(items);
     }
 
@@ -119,8 +120,14 @@ public class QueuePage extends Fragment implements Search.View {
     }
 
     @Override
-    public void addData(List<Track> items) {
+    public void addData(List<TrackItem> items) {
         mAdapter.addData(items);
+    }
+
+    @Override
+    public void clearData(){
+        mAdapter.clearData();
+        npAdapter.clearData();
     }
 
     @Override
@@ -128,8 +135,13 @@ public class QueuePage extends Fragment implements Search.View {
         mAdapter.removeItem(position);
     }
 
-    public Track getItem(int position){
+    public TrackItem getItem(int position){
         return mAdapter.getItem(position);
+    }
+
+    @Override
+    public void setPlaying(int position){
+        mAdapter.setPlaying(position);
     }
 
     @Override

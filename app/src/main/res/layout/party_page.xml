@@ -11,11 +11,12 @@
     tools:layout_editor_absoluteY="25dp">
 
     <android.support.design.widget.AppBarLayout
-        android:layout_width="584dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay"
-        tools:layout_editor_absoluteY="0dp"
-        tools:layout_editor_absoluteX="8dp">
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
@@ -29,6 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/Party"
+                android:textAlignment="center"
                 android:textSize="24sp" />
 
 
@@ -38,24 +40,28 @@
 
     <Button
         android:id="@+id/createPartyButton"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="32dp"
         android:background="@drawable/party_button"
         android:text="@string/create_party"
+        android:textAllCaps="false"
         android:textColor="@color/textColorDefault"
+        android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
     <Button
         android:id="@+id/joinPartyButton"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:background="@drawable/party_button"
         android:text="@string/join_party"
+        android:textAllCaps="false"
         android:textColor="@color/textColorDefault"
+        android:textSize="18sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline2" />

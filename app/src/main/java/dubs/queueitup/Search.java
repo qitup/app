@@ -4,6 +4,7 @@ import com.spotify.sdk.android.player.Metadata;
 
 import java.util.List;
 
+import dubs.queueitup.Models.TrackItem;
 import kaaes.spotify.webapi.android.models.Track;
 
 
@@ -17,9 +18,6 @@ public class Search {
 
         void addData(List<Track> items);
 
-        void addPlaying(List<Track> items);
-
-        void removeItem(int position);
     }
 
     public interface ActionListener {

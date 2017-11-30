@@ -16,13 +16,14 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import dubs.queueitup.Models.Party;
-import dubs.queueitup.Models.User;
+import dubs.queueitup.Models.*;
+import dubs.queueitup.Models.Queue;
 
 public class CreateParty extends AppCompatActivity {
 
@@ -55,7 +56,7 @@ public class CreateParty extends AppCompatActivity {
         try {
             party_info.put("name", _party_name.getText().toString());
             party_info.put("join_code", _party_code.getText().toString());
-            settings.put("timeout", _time_out.getText().toString());
+            settings.put("timeout", Integer.parseInt(_time_out.getText().toString()));
             party_info.put("settings", settings);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -75,7 +76,7 @@ public class CreateParty extends AppCompatActivity {
                             String id = response.getJSONObject("party").getString("id");
                           JSONObject host = response.getJSONObject("party").getJSONObject("host");
                             User host_user = new User(host.getString("id"), host.getString("name"), host.get("avatar_url").toString());
-                            intent.putExtra("party_details", new Party(name, join_code, host_user, id, null, null));
+                            intent.putExtra("party_details", new Party(name, join_code, host_user, id, null, new Queue(new ArrayList<TrackItem>())));
                             intent.putExtra("socket_url", response.get("url").toString());
 
                         } catch (JSONException e) {

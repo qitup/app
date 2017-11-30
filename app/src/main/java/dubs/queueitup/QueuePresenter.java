@@ -14,6 +14,7 @@ import com.spotify.sdk.android.player.SpotifyPlayer;
 import java.util.ArrayList;
 import java.util.List;
 
+import dubs.queueitup.Models.TrackItem;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
@@ -22,7 +23,7 @@ import kaaes.spotify.webapi.android.models.Track;
  * Created by ryanschott on 2017-10-23.
  */
 
-public class QueuePresenter implements Search.ActionListener {
+public class QueuePresenter {
     private static final String TAG = SearchPresenter.class.getSimpleName();
     public static final int PAGE_SIZE = 20;
     private static final String CLIENT_ID = "SPOTIFY_ID";
@@ -43,7 +44,6 @@ public class QueuePresenter implements Search.ActionListener {
         mView = view;
     }
 
-    @Override
     public void init(String accessToken) {
         spotifyApi = new SpotifyApi();
 
@@ -54,7 +54,7 @@ public class QueuePresenter implements Search.ActionListener {
         }
     }
 
-    public void addQueueItem(final String id) {
+    public void addQueueItem(final List<TrackItem>items) {
         if(spotifyApi == null){
             if(RequestSingleton.getSpotify_auth_token() == null){
                 logError("HOLY SHIT ITS EMPTY");
@@ -62,93 +62,53 @@ public class QueuePresenter implements Search.ActionListener {
                 init(RequestSingleton.getSpotify_auth_token());
                 mSpotifyApi = spotifyApi.getService();
 
-                LoadTrackTask task = new LoadTrackTask();
-                task.execute(id);
+                for (int i = 0; i < items.size(); i++){
+                    if(!items.get(i).isPlaying()){
+                        LoadTrackTask task = new LoadTrackTask();
+                        task.execute(items.get(i));
+                    }
+
+                }
             }
 
         } else {
             mSpotifyApi = spotifyApi.getService();
 
-            LoadTrackTask task = new LoadTrackTask();
-            task.execute(id);
+            for (int i = 0; i < items.size(); i++) {
+                if (!items.get(i).isPlaying()) {
+                    LoadTrackTask task = new LoadTrackTask();
+                    task.execute(items.get(i));
+                }
+            }
         }
     }
 
-    public Track removeQueueItem(final int position){
-        Track item = mView.getItem(position);
+    public TrackItem removeQueueItem(final int position){
+        TrackItem item = mView.getItem(position);
         mView.removeItem(position);
         return item;
-
     }
 
-    public void addPlaying(final String id){
+    public void clearData(){
+        mView.clearData();
+    }
+
+    public TrackItem setPlaying(final int position){
+        TrackItem item = mView.getItem(position);
+        mView.setPlaying(position);
+        return item;
+    }
+
+    public void addPlaying(TrackItem item){
         if(spotifyApi == null){
             init(RequestSingleton.getSpotify_auth_token());
         }
         mSpotifyApi = spotifyApi.getService();
 
         LoadPTrackTask task = new LoadPTrackTask();
-        task.execute(id);
+        task.execute(item);
     }
 
-
-    @Override
-    public void search(@Nullable String searchQuery) {
-        if (searchQuery != null && !searchQuery.isEmpty() && !searchQuery.equals(mCurrentQuery)) {
-//            logMessage("query text submit " + searchQuery);
-            mCurrentQuery = searchQuery;
-            mView.reset();
-            mSearchListener = new SearchPager.CompleteListener() {
-                @Override
-                public void onComplete(List<Track> items) {
-                    mView.addData(items);
-                }
-
-                @Override
-                public void onError(Throwable error) {
-                    logError(error.getMessage());
-                }
-            };
-            mSearchPager.getFirstPage(searchQuery, PAGE_SIZE, mSearchListener);
-        }
-    }
-
-
-    @Override
-    public void destroy() {
-    }
-
-    @Override
-    @Nullable
-    public String getCurrentQuery() {
-        return mCurrentQuery;
-    }
-
-    @Override
-    public void resume() {
-//        mContext.stopService(PlayerService.getIntent(mContext));
-    }
-
-    @Override
-    public void pause() {
-//        mContext.startService(PlayerService.getIntent(mContext));
-    }
-
-    @Override
-    public void loadMoreResults() {
-        Log.d(TAG, "Load more...");
-//        mSearchPager.getNextPage(mSearchListener);
-    }
-
-    @Override
-    public void selectTrack(Track item) {
-        String previewUrl = item.preview_url;
-
-        if (previewUrl == null) {
-            logMessage("Track doesn't have a preview");
-            return;
-        }
-    }
 
     private void logError(String msg) {
         Toast.makeText(mContext, "Error: " + msg, Toast.LENGTH_SHORT).show();
@@ -160,32 +120,45 @@ public class QueuePresenter implements Search.ActionListener {
         Log.d(TAG, msg);
     }
 
-    private class LoadTrackTask extends AsyncTask<String, Integer, Track> {
+    private class LoadTrackTask extends AsyncTask<TrackItem, Integer, Track> {
+
+        private TrackItem item;
+
         @Override
-        protected Track doInBackground(String... strings) {
-            return mSpotifyApi.getTrack(strings[0]);
+        protected Track doInBackground(TrackItem... items) {
+            item = items[0];
+            String id = item.getUri().split(":")[2];
+            return  mSpotifyApi.getTrack(id);
         }
 
         @Override
         protected void onPostExecute(Track result) {
-            List<Track> tracksToAdd = new ArrayList<>();
+            List<TrackItem> tracksToAdd = new ArrayList<>();
 
-            tracksToAdd.add(result);
+            item.loaded(result);
+
+            tracksToAdd.add(item);
             mView.addData(tracksToAdd);
         }
     }
 
-    private class LoadPTrackTask extends AsyncTask<String, Integer, Track> {
+    private class LoadPTrackTask extends AsyncTask<TrackItem, Integer, Track> {
+        private TrackItem item;
+
         @Override
-        protected Track doInBackground(String... strings) {
-            return mSpotifyApi.getTrack(strings[0]);
+        protected Track doInBackground(TrackItem... items) {
+            item = items[0];
+            String id = item.getUri().split(":")[2];
+            return mSpotifyApi.getTrack(id);
         }
 
         @Override
         protected void onPostExecute(Track result) {
-            List<Track> tracksToAdd = new ArrayList<>();
+            List<TrackItem> tracksToAdd = new ArrayList<>();
 
-            tracksToAdd.add(result);
+            item.loaded(result);
+
+            tracksToAdd.add(item);
             mView.addPlaying(tracksToAdd);
         }
     }

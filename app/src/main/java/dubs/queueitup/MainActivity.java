@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -65,6 +66,7 @@ import java.util.Objects;
 import dubs.queueitup.Models.Party;
 import dubs.queueitup.Models.QItem;
 import dubs.queueitup.Models.Queue;
+import dubs.queueitup.Models.TrackItem;
 import dubs.queueitup.Models.User;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.models.Track;
@@ -280,10 +282,10 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     Toast.makeText(this, "Successfully created party", Toast.LENGTH_SHORT).show();
 
                     Bundle buns = data.getExtras();
-                    Party party = (Party) buns.getParcelable("party_details");
+                    currentParty = (Party) buns.getParcelable("party_details");
 
                     Bundle args = createFragmentBundle();
-                    args.putParcelable("party", party);
+                    args.putParcelable("party", currentParty);
 
                     try {
                         pagerAdapter.swapFragmentAt(createFragment(3, args), 0);
@@ -336,14 +338,14 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
     public void refreshQueue(){
         Queue queue = currentParty.getQueue();
-        List<QItem> items = queue.getQueue_items();
-
-        for (int i = 0; i < items.size(); i++) {
-            String uri = items.get(i).getUri();
-            String[] parts = uri.split(":");
-            final String id = parts[parts.length - 1];
-            mPresenter.addQueueItem(id);
+        List<TrackItem> items = queue.getQueue_items();
+        for (int i = 0; i < items.size(); i++){
+            if(items.get(i).isPlaying()){
+                mPresenter.addPlaying(items.get(i));
+            }
         }
+        mPresenter.clearData();
+        mPresenter.addQueueItem(items);
     }
 
     public void getSpotifyToken(){
@@ -451,6 +453,36 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                 }
                             });
                             break;
+                        case "player.interrupted":
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.play_button);
+                                    PlayerSingleton.getInstance(getApplicationContext()).setPlaying(0);
+                                    Toast.makeText(getApplicationContext(), "Player interruption", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            break;
+                        case "player.play":
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.pause);
+                                    PlayerSingleton.getInstance(getApplicationContext()).setPlaying(1);
+                                    Toast.makeText(getApplicationContext(), "Queue Played", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            break;
+                        case "player.pause":
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.play_button);
+                                    PlayerSingleton.getInstance(getApplicationContext()).setPlaying(0);
+                                    Toast.makeText(getApplicationContext(), "Player paused", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            break;
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -470,33 +502,30 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     public void updateQueue(JSONArray tracks){
         Queue queue = currentParty.getQueue();
 
-        List<QItem> items = queue.getQueue_items();
+        List<TrackItem> tItems = queue.getQueue_items();
+        List<TrackItem> toAdd = new ArrayList<>();
         for (int i = 0; i < tracks.length(); i++){
             try {
-                if(i < items.size()){
-                    if(items.get(i).getUri() != tracks.getJSONObject(i).get("uri")){
-                        items.remove(i);
-                        mPresenter.removeQueueItem(i);
+                if(i < tItems.size()){
+                    if((tItems.get(i)).getUri() != tracks.getJSONObject(i).get("uri")){
+                        tItems.remove(i);
                         i--;
                     }
                 } else {
-                    items.add(i,
-                        new QItem(
-                            tracks.getJSONObject(i).get("type").toString(),
-                            tracks.getJSONObject(i).get("added_by").toString(),
-                            tracks.getJSONObject(i).get("added_at").toString(),
-                            tracks.getJSONObject(i).get("uri").toString())
-                    );
-                    String uri = items.get(i).getUri();
-                    String[] parts = uri.split(":");
-                    final String id = parts[parts.length - 1];
-                    mPresenter.addQueueItem(id);
+                    TrackItem track = new TrackItem(
+                        tracks.getJSONObject(i).get("type").toString(),
+                        tracks.getJSONObject(i).get("added_by").toString(),
+                        tracks.getJSONObject(i).get("added_at").toString(),
+                        tracks.getJSONObject(i).getJSONObject("state").getBoolean("playing"),
+                        tracks.getJSONObject(i).get("uri").toString());
+                    tItems.add(i, track);
                 }
-
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+        currentParty.getQueue().setQueue_items(tItems);
+        refreshQueue();
     }
 
     public void updateAttendees(JSONArray users){
@@ -613,7 +642,19 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         return canHost;
     }
 
-
+    public boolean isUserHost(){
+        String token = RequestSingleton.getJWT_token();
+        JSONObject claim = null;
+        String userID = null;
+        try {
+            claim = new JSONObject(JWTUtils.decoded(token));
+            userID = claim.getString("sub");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        assert userID != null;
+        return userID.equals(currentParty.getHost().getId());
+    }
 
     @Override
     public void addTrack(Track track) {
@@ -650,144 +691,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Log.d("MainActivity", uri);
     }
 
-    private void pause(){
-        final SpotifyPlayer player = this.mPlayer;
-        if (player == null) {
-            Log.wtf(TAG, "SpotifyPlayer instance was null in pause.");
-
-            JSONObject descr = this.makeError(
-                    "unknown",
-                    "Received null as SpotifyPlayer in pause method."
-            );
-            return;
-        }
-
-        player.pause(new Player.OperationCallback() {
-            @Override
-            public void onSuccess() {
-//                callbackContext.success();
-            }
-
-            @Override
-            public void onError(Error error) {
-                Log.e(TAG, "Pause failure: " + error.toString());
-
-                JSONObject descr = MainActivity.this.makeError(
-                        "pause_failed",
-                        error.toString()
-                );
-//                callbackContext.error(descr);
-            }
-        });
-    }
-
-    private void resume(){
-        final SpotifyPlayer player = this.mPlayer;
-        if (player == null) {
-            Log.wtf(TAG, "SpotifyPlayer instance was null in resume.");
-
-            JSONObject descr = this.makeError(
-                    "unknown",
-                    "Received null as SpotifyPlayer in resume method."
-            );
-            return;
-        }
-
-        player.resume(new Player.OperationCallback() {
-            @Override
-            public void onSuccess() {
-//                callbackContext.success();
-            }
-
-            @Override
-            public void onError(Error error) {
-                Log.e(TAG, "Resume failure: " + error.toString());
-
-                JSONObject descr = MainActivity.this.makeError(
-                        "resume_failed",
-                        error.toString()
-                );
-//                callbackContext.error(descr);
-            }
-        });
-    }
-
-    private void play(final String clientId,
-                      final String accessToken,
-                      final String trackUri,
-                      final int fromPosition) {
-        SpotifyPlayer player = this.mPlayer;
-
-        if (player == null) {
-            this.initAndPlay(
-                    clientId,
-                    accessToken,
-                    trackUri,
-                    fromPosition
-            );
-        } else if (!Objects.equals(clientId, this.currentClientId)) {
-            this.logout(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.initAndPlay(
-                            clientId,
-                            accessToken,
-                            trackUri,
-                            fromPosition
-                    );
-                }
-            });
-        } else if (!Objects.equals(accessToken, this.currentAccessToken)) {
-            this.logout(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.loginAndPlay(
-                            accessToken,
-                            trackUri,
-                            fromPosition
-                    );
-                }
-            });
-        } else {
-            this.doPlay(trackUri, fromPosition);
-        }
-    }
-
-    private void initAndPlay(
-            final String clientId,
-            final String accessToken,
-            final String trackUri,
-            final int fromPosition
-    ) {
-        Config playerConfig = new Config(
-                getApplicationContext(),
-                null,
-                clientId
-        );
-
-        Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
-            @Override
-            public void onInitialized(SpotifyPlayer spotifyPlayer) {
-                mPlayer = spotifyPlayer;
-                PlayerSingleton.getInstance(getApplicationContext()).setPlayer(spotifyPlayer);
-                mPlayer.setConnectivityStatus(mOperationCallback, getNetworkConnectivity(MainActivity.this));
-                MainActivity.this.loginAndPlay(accessToken, trackUri, fromPosition);
-//                testEmitter();
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                Log.e(TAG, "Player init failure.", throwable);
-
-                MainActivity.this.currentClientId = null;
-                JSONObject descr = MainActivity.this.makeError(
-                        "player_init_failed",
-                        throwable.getMessage()
-                );
-            }
-        });
-    }
-
     /**
      * Registering for connectivity changes in Android does not actually deliver them to
      * us in the delivered intent.
@@ -805,124 +708,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             return Connectivity.OFFLINE;
         }
     }
-
-    private void loginAndPlay(
-            final String accessToken,
-            final String trackUri,
-            final int fromPosition
-    ) {
-        final SpotifyPlayer player = this.mPlayer;
-        if (player == null) {
-            Log.wtf(TAG, "SpotifyPlayer instance was null in loginAndPlay.");
-
-            JSONObject descr = this.makeError(
-                    "unknown",
-                    "Received null as SpotifyPlayer in login method."
-            );
-            return;
-        }
-
-        player.addConnectionStateCallback(this.connectionEventsHandler);
-        player.addNotificationCallback(this.playerEventsHandler);
-
-        this.connectionEventsHandler.onLoggedIn(new Player.OperationCallback() {
-            @Override
-            public void onSuccess() {
-                MainActivity.this.currentAccessToken = accessToken;
-
-                MainActivity.this.doPlay(
-                        trackUri,
-                        fromPosition
-                );
-//                testEmitter();
-            }
-
-            @Override
-            public void onError(Error error) {
-                Log.e(TAG, "Login failure: " + error.toString());
-
-                MainActivity.this.currentAccessToken = null;
-                JSONObject descr = MainActivity.this.makeError(
-                        "login_failed",
-                        error.toString()
-                );
-            }
-        });
-
-        player.login(accessToken);
-    }
-
-    private void doPlay(
-            final String trackUri,
-            final int fromPosition) {
-
-        final SpotifyPlayer player = this.mPlayer;
-        if (player == null) {
-            Log.wtf(TAG, "SpotifyPlayer instance was null in doPlay.");
-
-            JSONObject descr = this.makeError(
-                    "unknown",
-                    "Received null as SpotifyPlayer in play method."
-            );
-            return;
-        }
-
-        player.playUri(new Player.OperationCallback() {
-            @Override
-            public void onSuccess() {
-//                callbackContext.success();
-            }
-
-            @Override
-            public void onError(Error error) {
-                Log.e(TAG, "Playback failure: " + error.toString());
-
-                JSONObject descr = MainActivity.this.makeError(
-                        "playback_failed",
-                        error.toString()
-                );
-//                callbackContext.error(descr);
-            }
-        }, trackUri, 0, fromPosition);
-    }
-
-    private void logout(final Runnable callback) {
-        final SpotifyPlayer player = this.mPlayer;
-        if (player == null) {
-            callback.run();
-            return;
-        }
-
-        Runnable cb = new Runnable() {
-            @Override
-            public void run() {
-                player.removeConnectionStateCallback(MainActivity.this.connectionEventsHandler);
-                player.removeNotificationCallback(MainActivity.this.playerEventsHandler);
-
-                callback.run();
-            }
-        };
-
-        if (player.isLoggedIn()) {
-            this.connectionEventsHandler.onLoggedOut(cb);
-            player.logout();
-        } else {
-            cb.run();
-        }
-    }
-
-    private JSONObject makeError(String type, String msg) {
-        try {
-            final JSONObject obj = new JSONObject();
-            obj.put("type", type);
-            obj.put("msg", msg);
-            return obj;
-        } catch (JSONException e) {
-            Log.wtf(TAG, "Got a JSONException during error creation.", e);
-            return null;
-        }
-    }
-
 
     public void setupBottomNavBehaviors() {
 //        bottomNavigation.setBehaviorTranslationEnabled(false);
@@ -1009,31 +794,28 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         }
     }
 
-    public void setNowPlaying(int position) {
-        Track item = mPresenter.removeQueueItem(position);
+    public void setNowPlaying(TrackItem item) {
 
-        String uri = item.uri;
-        String[] parts = uri.split(":");
-        final String id = parts[parts.length - 1];
-
-        mPresenter.addPlaying(id);
+        mPresenter.addPlaying(item);
     }
 
     @Override
     public void onMediaAction(View v) {
-        if (currentParty != null) {
+        if (isUserHost() && currentParty != null) {
             if (PlayerSingleton.getInstance(this).isEmpty()) {
                 makePlayerRequest("play");
+                ((ImageButton)v).setImageResource(R.drawable.pause);
                 PlayerSingleton.getInstance(this).setPlaying(1);
-                setNowPlaying(0);
+//                setNowPlaying(0);
             } else {
                 if (PlayerSingleton.getInstance(this).isPlaying() == 1) {
                     makePlayerRequest("pause");
-    //                v.setBackgroundResource(R.drawable.play_button);
                     PlayerSingleton.getInstance(this).setPlaying(0);
+                    ((ImageButton)v).setImageResource(R.drawable.play_button);
                 } else {
                     makePlayerRequest("play");
                     PlayerSingleton.getInstance(this).setPlaying(1);
+                    ((ImageButton)v).setImageResource(R.drawable.pause);
                 }
             }
         }
@@ -1075,6 +857,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     }
 
     public void leaveRequest(String transferTo){
+
         String requestURL = baseURL + "/party/leave/?id=" + currentParty.getID();
         if(transferTo != null){
             requestURL = requestURL + "&transfer_to="+transferTo;
@@ -1085,6 +868,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
                         Log.d("Main", "Response is: " + response.toString());
+
+                        PartySingleton.getInstance(getApplicationContext()).getSocket().close();
+                        currentParty = null;
 
                         try {
                             pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
@@ -1113,7 +899,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 return params;
             }
         };
-
 
         RequestSingleton.getInstance(this).addToRequestQueue(request);
     }
