@@ -781,8 +781,37 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             e.printStackTrace();
         }
 
-        partySocket.send(message.toString());
-        Log.d("MainActivity", uri);
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/party/push/?id="+currentParty.getID(), message,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("Main", "Response is: " + response.toString());
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.wtf("Error", error.toString());
+                        if (error.networkResponse.statusCode == 400) {
+                            Toast.makeText(getApplicationContext(), "Party not found", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Error", "That didn't work!" + error.toString());
+                        }
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+
+                return params;
+            }
+        };
+        
+        RequestSingleton.getInstance(this).addToRequestQueue(request);
+
     }
 
     /**
