@@ -364,7 +364,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         for (int i = 0; i < items.size(); i++){
             if(items.get(i).isPlaying()){
                 mPresenter.addPlaying(items.get(i));
-//                Toast.makeText(this, items.get(i).getUri(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, items.get(i).getUri(), Toast.LENGTH_SHORT).show();
             }
         }
         mPresenter.clearData();
@@ -414,7 +414,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Map<String, String> params = new HashMap<String, String>();
         params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
 
-        return new PartySocket(uri, new Draft_6455(), params, 3000) {
+        return new PartySocket(uri, new Draft_6455(), params, 10000) {
             @Override
             public void onMessage(String message) {
                 JSONObject response;
@@ -547,6 +547,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         i--;
                     } else if (tracks.getJSONObject(i).getJSONObject("state").getBoolean("playing")){
                         tItems.get(i).setPlaying(true);
+                        toAdd.put(-2, tItems.get(i));
                     }
                 } else {
 
@@ -582,9 +583,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             TrackItem track = (TrackItem) pair.getValue();
             if(track == null){
                 mPresenter.removeQueueItem(i);
-            } else if(i < 0){
+            } else if(i == -1){
                 mPresenter.addPlaying(track);
-            }else {
+            } else {
                 List<TrackItem> list = new ArrayList<>();
                 list.add(track);
                 mPresenter.addQueueItem(list);
@@ -923,7 +924,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
         String requestURL = baseURL + "/party/leave/?id=" + currentParty.getID();
         if (transferTo.equals("end_party")){
-            requestURL = requestURL + "&end";
+            requestURL = requestURL + "&end_party=1";
         }else if(transferTo != null){
             requestURL = requestURL + "&transfer_to="+transferTo;
         }
