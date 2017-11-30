@@ -26,6 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Party Name"
+            android:inputType="text"
             android:textColor="@color/textColorDefault"
             android:textColorHint="@color/tabTextColor"
             android:textColorLink="@color/colorPrimary" />
@@ -51,6 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:hint="Party Code"
+            android:inputType="text"
             android:textColor="@color/textColorDefault"
             android:textColorHint="@color/tabTextColor"
             android:textColorLink="@color/colorPrimary" />
@@ -73,7 +75,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10"
-            android:hint="Timeout (minutes)"
+            android:hint="Timeout (seconds)"
             android:inputType="number"
             android:textColor="@color/textColorDefault"
             android:textColorHint="@color/tabTextColor" />

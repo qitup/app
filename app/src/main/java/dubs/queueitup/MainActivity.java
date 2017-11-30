@@ -10,6 +10,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -59,6 +60,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -121,10 +123,11 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("PACKAGE ID", getApplicationInfo().packageName);
+        super.onCreate(savedInstanceState);
+
         AppCompatDelegate.setDefaultNightMode(
                 AppCompatDelegate.MODE_NIGHT_AUTO);
-        super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         setupViewPager();
         bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
@@ -132,8 +135,14 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         setupBottomNavStyle();
         addBottomNavigationItems();
 
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivityForResult(intent, REQUEST_CODE_LOGIN);
+        if(savedInstanceState != null){
+            RequestSingleton.setJWT_token(savedInstanceState.get("jwt_token").toString());
+            RequestSingleton.setJWT_token(savedInstanceState.get("access_token").toString());
+        }else {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivityForResult(intent, REQUEST_CODE_LOGIN);
+        }
+
 
 //        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 //        String auth_string = settings.getString("jwt_token", null);
@@ -187,6 +196,12 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 return true;
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        // disable going back to the LoginActivity
+        moveTaskToBack(true);
     }
 
     public boolean tokenExpired(){
@@ -261,9 +276,16 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(mNetworkStateReceiver, filter);
 
-        if (mPlayer != null) {
-            mPlayer.addConnectionStateCallback(this.connectionEventsHandler);
-            mPlayer.addNotificationCallback(this.playerEventsHandler);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle SavedInstanceState){
+        super.onSaveInstanceState(SavedInstanceState);
+        if(RequestSingleton.getJWT_token() != null){
+            SavedInstanceState.putString("jwt_token", RequestSingleton.getJWT_token());
+        }
+        if(RequestSingleton.getJWT_token() != null){
+            SavedInstanceState.putString("access_token", RequestSingleton.getSpotify_auth_token());
         }
     }
 
@@ -295,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                     viewPager.getAdapter().notifyDataSetChanged();
 
                     mPresenter = ((QueuePage) pagerAdapter.getItem(1)).getPresenter();
-                    ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setEnabled(true);
+
                     try {
                         partySocket = newPartySocket(new URI(data.getStringExtra("socket_url")));
                     } catch (URISyntaxException e) {
@@ -391,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Map<String, String> params = new HashMap<String, String>();
         params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
 
-        return new PartySocket(uri, new Draft_6455(), params, 3000) {
+        return new PartySocket(uri, new Draft_6455(), params, 10000) {
             @Override
             public void onMessage(String message) {
                 JSONObject response;
@@ -467,6 +489,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+//                                    updateQueue(Tracks);
                                     ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.pause);
                                     PlayerSingleton.getInstance(getApplicationContext()).setPlaying(1);
                                     Toast.makeText(getApplicationContext(), "Queue Played", Toast.LENGTH_SHORT).show();
@@ -479,7 +502,26 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                 public void run() {
                                     ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.play_button);
                                     PlayerSingleton.getInstance(getApplicationContext()).setPlaying(0);
-                                    Toast.makeText(getApplicationContext(), "Player paused", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "Queue paused", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            break;
+                        case "party.close":
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                    viewPager.getAdapter().notifyDataSetChanged();
+
+                                    currentParty = null;
+                                    PartySingleton.getInstance(getApplicationContext()).getSocket().close();
+                                    ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.play_button);
+                                    PlayerSingleton.getInstance(getApplicationContext()).setPlaying(0);
+                                    Toast.makeText(getApplicationContext(), "Party closed by host", Toast.LENGTH_SHORT).show();
                                 }
                             });
                             break;
@@ -487,6 +529,11 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+            }
+
+            @Override
+            public void onClose(int code, String reason, boolean remote) {
+                Log.d("MainActivity", "Socket closed.");
             }
         };
     }
@@ -503,13 +550,15 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         Queue queue = currentParty.getQueue();
 
         List<TrackItem> tItems = queue.getQueue_items();
-        List<TrackItem> toAdd = new ArrayList<>();
         for (int i = 0; i < tracks.length(); i++){
             try {
                 if(i < tItems.size()){
                     if((tItems.get(i)).getUri() != tracks.getJSONObject(i).get("uri")){
                         tItems.remove(i);
                         i--;
+                    } else {
+                        Log.d("UPDATE:", "QUEUE" + tracks.getJSONObject(i).get("uri").toString());
+                        Log.d("UPDATE:", "QUEUE" + tracks.getJSONObject(i).getJSONObject("state").get("playing").toString());
                     }
                 } else {
                     TrackItem track = new TrackItem(
@@ -518,14 +567,36 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                         tracks.getJSONObject(i).get("added_at").toString(),
                         tracks.getJSONObject(i).getJSONObject("state").getBoolean("playing"),
                         tracks.getJSONObject(i).get("uri").toString());
+
                     tItems.add(i, track);
+                    Log.d("UPDATE:", "QUEUE" + tracks.getJSONObject(i).get("uri").toString());
+                    Log.d("UPDATE:", "QUEUE" + tracks.getJSONObject(i).getJSONObject("state").get("playing").toString());
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
         currentParty.getQueue().setQueue_items(tItems);
+//        addChanges(toAdd);
         refreshQueue();
+    }
+
+    public void addChanges(Map<Integer, TrackItem> changes){
+        Iterator it = changes.entrySet().iterator();
+        while(it.hasNext()){
+            Map.Entry pair = (Map.Entry)it.next();
+            int i = (int) pair.getKey();
+            TrackItem track = (TrackItem) pair.getValue();
+            if(track == null){
+                mPresenter.removeQueueItem(i);
+            } else if(i == -1){
+                mPresenter.addPlaying(track);
+            } else {
+                List<TrackItem> list = new ArrayList<>();
+                list.add(track);
+                mPresenter.addQueueItem(list);
+            }
+        }
     }
 
     public void updateAttendees(JSONArray users){
@@ -658,17 +729,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
     @Override
     public void addTrack(Track track) {
-        JSONObject message = new JSONObject();
         JSONObject queue_item = new JSONObject();
 
         String type = "spotify_track";
-        String uri = track.uri;
-
-        try {
-            message.put("type", "queue.push");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
         try {
             queue_item.put("type", type);
@@ -676,19 +739,42 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             e.printStackTrace();
         }
         try {
-            queue_item.put("uri", uri);
+            queue_item.put("uri", track.uri);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        try {
-            message.put("item", queue_item);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/party/push?id="+currentParty.getID(), queue_item,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("Main", "Response is: " + response.toString());
 
-        partySocket.send(message.toString());
-        Log.d("MainActivity", uri);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.wtf("Error", error.toString());
+                        if (error.networkResponse.statusCode == 400) {
+                            Toast.makeText(getApplicationContext(), "Party not found", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Error", "That didn't work!" + error.toString());
+                        }
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Bearer " + RequestSingleton.getJWT_token());
+
+                return params;
+            }
+        };
+
+        RequestSingleton.getInstance(this).addToRequestQueue(request);
+
     }
 
     /**
@@ -801,12 +887,11 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
     @Override
     public void onMediaAction(View v) {
-        if (isUserHost() && currentParty != null) {
+        if (currentParty != null && isUserHost()){
             if (PlayerSingleton.getInstance(this).isEmpty()) {
                 makePlayerRequest("play");
                 ((ImageButton)v).setImageResource(R.drawable.pause);
                 PlayerSingleton.getInstance(this).setPlaying(1);
-//                setNowPlaying(0);
             } else {
                 if (PlayerSingleton.getInstance(this).isPlaying() == 1) {
                     makePlayerRequest("pause");
@@ -859,7 +944,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     public void leaveRequest(String transferTo){
 
         String requestURL = baseURL + "/party/leave/?id=" + currentParty.getID();
-        if(transferTo != null){
+        if (transferTo.equals("end_party")){
+            requestURL = requestURL + "&end_party=1";
+        }else if(transferTo != null){
             requestURL = requestURL + "&transfer_to="+transferTo;
         }
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestURL, null,
@@ -919,7 +1006,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         final List<User> users = currentParty.getAttendees();
 
         if(!user_id.equals(currentParty.getHost().getId()) || users.size() == 0) {
-            leaveRequest(null);
+            leaveRequest("end_party");
         } else {
             List<String> names = new ArrayList<>();
                         AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
@@ -936,6 +1023,14 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             builderSingle.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+
+            builderSingle.setPositiveButton("Close Party", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    leaveRequest("end_party");
                     dialog.dismiss();
                 }
             });

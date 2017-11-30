@@ -67,10 +67,8 @@ public class QueuePresenter {
                         LoadTrackTask task = new LoadTrackTask();
                         task.execute(items.get(i));
                     }
-
                 }
             }
-
         } else {
             mSpotifyApi = spotifyApi.getService();
 
