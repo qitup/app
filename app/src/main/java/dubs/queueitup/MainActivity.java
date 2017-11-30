@@ -364,7 +364,6 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
         for (int i = 0; i < items.size(); i++){
             if(items.get(i).isPlaying()){
                 mPresenter.addPlaying(items.get(i));
-                Toast.makeText(this, items.get(i).getUri(), Toast.LENGTH_SHORT).show();
             }
         }
         mPresenter.clearData();
