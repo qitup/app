@@ -517,6 +517,28 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                                     Toast.makeText(getApplicationContext(), "Party closed by host", Toast.LENGTH_SHORT).show();
                                 }
                             });
+                            break;
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onClose(int code, String reason, boolean remote) {
+                try{
+                    JSONObject result = new JSONObject(reason);
+                    if(result.getString("type") == "party.close"){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                currentParty = null;
+                                PartySingleton.getInstance(getApplicationContext()).getSocket().close();
+                                ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.play_button);
+                                PlayerSingleton.getInstance(getApplicationContext()).setPlaying(0);
+                                Toast.makeText(getApplicationContext(), "Party closed by host", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
