@@ -486,16 +486,16 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                             });
                             break;
                         case "player.play":
-                            JSONObject queue;
+                            JSONObject Queue;
                             final JSONArray Tracks;
 
                             try {
-                                queue = response.getJSONObject("queue");
+                                Queue = response.getJSONObject("queue");
                             } catch (JSONException e) {
                                 e.printStackTrace();
                                 return;
                             }
-                            Tracks = queue.getJSONArray("items");
+                            Tracks = Queue.getJSONArray("items");
 
                             runOnUiThread(new Runnable() {
                                 @Override
