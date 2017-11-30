@@ -70,6 +70,16 @@
             android:textSize="18sp" />
 
         <TextView
+            android:id="@+id/link_signup"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:text="No account yet? Create one"
+            android:textColor="@color/textColorDefault"
+            android:textSize="16dip" />
+
+        <TextView
             android:id="@+id/or"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -90,19 +100,10 @@
             android:fontFamily="sans-serif"
             android:padding="12dp"
             android:text="Login with Spotify"
+            android:textAlignment="center"
             android:textAllCaps="false"
             android:textColor="@color/textColorDefault"
             android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/link_signup"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:gravity="center"
-            android:textColor="@color/textColorDefault"
-            android:text="No account yet? Create one"
-            android:textSize="16dip" />
 
     </LinearLayout>
 </ScrollView>

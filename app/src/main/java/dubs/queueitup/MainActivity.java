@@ -500,7 +500,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    updateQueue(Tracks);
+//                                    updateQueue(Tracks);
                                     ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.pause);
                                     PlayerSingleton.getInstance(getApplicationContext()).setPlaying(1);
                                     Toast.makeText(getApplicationContext(), "Queue Played", Toast.LENGTH_SHORT).show();
