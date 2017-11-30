@@ -526,30 +526,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
             @Override
             public void onClose(int code, String reason, boolean remote) {
-                try{
-                    JSONObject result = new JSONObject(reason);
-                    if(result.getString("type") == "party.close"){
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                viewPager.getAdapter().notifyDataSetChanged();
-
-                                currentParty = null;
-                                PartySingleton.getInstance(getApplicationContext()).getSocket().close();
-                                ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.play_button);
-                                PlayerSingleton.getInstance(getApplicationContext()).setPlaying(0);
-                                Toast.makeText(getApplicationContext(), "Party closed by host", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                Log.d("MainActivity", "Socket closed.");
             }
         };
     }
@@ -767,7 +744,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             e.printStackTrace();
         }
 
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/party/push/?id="+currentParty.getID(), queue_item,
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/party/push?id="+currentParty.getID(), queue_item,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
