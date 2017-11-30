@@ -752,17 +752,9 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
 
     @Override
     public void addTrack(Track track) {
-        JSONObject message = new JSONObject();
         JSONObject queue_item = new JSONObject();
 
         String type = "spotify_track";
-        String uri = track.uri;
-
-        try {
-            message.put("type", "queue.push");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
         try {
             queue_item.put("type", type);
@@ -770,18 +762,12 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
             e.printStackTrace();
         }
         try {
-            queue_item.put("uri", uri);
+            queue_item.put("uri", track.uri);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        try {
-            message.put("item", queue_item);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/party/push/?id="+currentParty.getID(), message,
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, baseURL + "/party/push/?id="+currentParty.getID(), queue_item,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -809,7 +795,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                 return params;
             }
         };
-        
+
         RequestSingleton.getInstance(this).addToRequestQueue(request);
 
     }
