@@ -510,6 +510,13 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    try {
+                                        pagerAdapter.swapFragmentAt(createFragment(0, null), 0);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                    viewPager.getAdapter().notifyDataSetChanged();
+
                                     currentParty = null;
                                     PartySingleton.getInstance(getApplicationContext()).getSocket().close();
                                     ((QueuePage) pagerAdapter.getItem(1)).mediaButton.setImageResource(R.drawable.play_button);
