@@ -63,17 +63,22 @@ public class QueuePresenter {
                 mSpotifyApi = spotifyApi.getService();
 
                 for (int i = 0; i < items.size(); i++){
-                    LoadTrackTask task = new LoadTrackTask();
-                    task.execute(items.get(i));
+                    if(!items.get(i).isPlaying()){
+                        LoadTrackTask task = new LoadTrackTask();
+                        task.execute(items.get(i));
+                    }
+
                 }
             }
 
         } else {
             mSpotifyApi = spotifyApi.getService();
 
-            for (int i = 0; i < items.size(); i++){
-                LoadTrackTask task = new LoadTrackTask();
-                task.execute(items.get(i));
+            for (int i = 0; i < items.size(); i++) {
+                if (!items.get(i).isPlaying()) {
+                    LoadTrackTask task = new LoadTrackTask();
+                    task.execute(items.get(i));
+                }
             }
         }
     }

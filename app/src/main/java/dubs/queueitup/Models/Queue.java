@@ -48,6 +48,10 @@ public class Queue implements Parcelable{
         return queue_items;
     }
 
+    public void setQueue_items(List<TrackItem> list){
+        queue_items = list;
+    }
+
     public void removeItem(int position){
         queue_items.remove(position);
     }
