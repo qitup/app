@@ -6,6 +6,7 @@ package dubs.queueitup;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -44,7 +45,7 @@ public class SpotifyLoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_spotify_login);
-        CookieManager cookieManager = CookieManager.getInstance();
+        final CookieManager cookieManager = CookieManager.getInstance();
 
         final WebView mWebview = (WebView) findViewById(R.id.webView);
 
@@ -61,10 +62,6 @@ public class SpotifyLoginActivity extends AppCompatActivity {
             cookieManager.setAcceptThirdPartyCookies(mWebview, true);
         }
 
-//        final WebSettings settings = mWebview.getSettings();
-//        settings.setAppCacheEnabled(true);
-//        settings.setBuiltInZoomControls(true);
-
         systemCookies = new java.net.CookieManager(null, CookiePolicy.ACCEPT_ALL);
         CookieHandler.setDefault(systemCookies);
 
@@ -74,17 +71,20 @@ public class SpotifyLoginActivity extends AppCompatActivity {
         mWebview.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                Uri request_uri = request.getUrl();
                 String request_url = request.getUrl().toString();
 
-                if (request_url.startsWith(baseURL + "/auth/spotify/callback")) {
-                    String cookieHeader = CookieManager.getInstance().getCookie(request.getUrl().getHost());
-
-                    // If there are cookies then add them to the cookie store for future requests
+                if (request_url.contains(baseURL + "/auth/spotify/callback")) {
+                    String cookieHeader = cookieManager.getCookie(request_uri.getHost());
+                    System.out.println("COOKIE: " + cookieHeader);
                     if (cookieHeader != null) {
-                        List<HttpCookie> cookies = HttpCookie.parse(cookieHeader);
-                        URI baseURI = URI.create(baseURL);
-                        for (HttpCookie cookie : cookies) {
-                            systemCookies.getCookieStore().add(baseURI, cookie);
+                        for (String raw : cookieHeader.split(";")) {
+                            List<HttpCookie> cookies = HttpCookie.parse(raw);
+                            URI baseURI = URI.create(baseURL);
+                            for (HttpCookie cookie : cookies) {
+                                // Add the cookie to the system cookie store for the Volley Request
+                                systemCookies.getCookieStore().add(baseURI, cookie);
+                            }
                         }
                     }
                     SpotifyLoginActivity.this.finishAuthentication(request_url);
@@ -115,13 +115,6 @@ public class SpotifyLoginActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
             }
         });
-        String jwt_token = getIntent().getStringExtra("jwt_token");
-        if(jwt_token != null){
-            String cookieString = "Authorization" + "=" + jwt_token + "; Domain=" + getHost();
-            cookieManager.setAcceptCookie(true);
-            cookieManager.setCookie(getHost(), cookieString);
-            Log.d("CookieUrl",cookieString + " ");
-        }
 
         mWebview.loadUrl(url);
 
