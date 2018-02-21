@@ -39,7 +39,7 @@ public class SpotifyLoginActivity extends AppCompatActivity {
     java.net.CookieManager systemCookies;
     private String baseURL = BuildConfig.scheme + "://" + getHost();
     private static final String HOST_EMULATOR = "10.0.2.2:8081";
-    private static final String CLIENT_ID = "SPOTIFY_ID";
+    private static final String CLIENT_ID = BuildConfig.CLIENT_ID;
     private static final String REDIRECT_URI = "queueitup-login://callback";
 
     @Override

@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements PartyPage.OnCreat
     private AHBottomNavigation bottomNavigation;
     private BottomBarAdapter pagerAdapter;
     private static final String HOST_EMULATOR = "10.0.2.2:8081";
-    private static final String CLIENT_ID = BuildConfig.clientID;
+    private static final String CLIENT_ID = BuildConfig.CLIENT_ID;
     private static final String REDIRECT_URI = "queueitup-login://callback";
     private static String baseURL = BuildConfig.scheme + "://" + getHost();
     private static final int REQUEST_CODE_LOGIN_CREATE = 1336;

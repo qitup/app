@@ -26,7 +26,7 @@ import kaaes.spotify.webapi.android.models.Track;
 public class QueuePresenter {
     private static final String TAG = SearchPresenter.class.getSimpleName();
     public static final int PAGE_SIZE = 20;
-    private static final String CLIENT_ID = "SPOTIFY_ID";
+    private static final String CLIENT_ID = BuildConfig.CLIENT_ID;
 
     private final Context mContext;
     private final QueuePage mView;
